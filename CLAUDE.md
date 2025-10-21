@@ -20,10 +20,9 @@ Pure Editor is a minimalist text-editing web application built with Nuxt 4 and V
 
 ## Commands
 
-- `bun run dev` - Start development server
-- `bun run build` - Build for production
 - `bun run typecheck` - Type checking with vue-tsc
 - `bun run format` - Prettier formatting
+- Never use `bun run dev`
 
 ## Key Links
 
