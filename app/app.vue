@@ -4,13 +4,7 @@
       <!-- Editor Container -->
       <div class="flex items-center justify-center min-h-screen px-6 py-12">
         <div class="w-full max-w-[70ch]">
-          <textarea
-            v-model="text"
-            @input="handleInput"
-            class="w-full min-h-[70vh] p-8 font-mono text-lg leading-relaxed resize-none bg-transparent border-0 outline-none text-[#0a0a0a] dark:text-[#fafafa] placeholder-[#a3a3a3] dark:placeholder-[#525252]"
-            placeholder="Start typing..."
-            spellcheck="false"
-          ></textarea>
+          <FocusedEditor v-model="text" @input="handleInput" placeholder="Start typing..." />
         </div>
       </div>
     </div>
