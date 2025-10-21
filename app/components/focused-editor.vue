@@ -86,35 +86,131 @@ const reindexParagraphs = () => {
 }
 
 const handleKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Enter' && !e.shiftKey) {
-   
+  if (e.key !== 'Enter' || e.shiftKey) return
 
-    const selection = window.getSelection()
-    if (!selection || !editorRef.value) return
+  e.preventDefault()
 
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0) return
+  if (!editorRef.value) return
+
+  try {
     const range = selection.getRangeAt(0)
-    const newDiv = document.createElement('div')
-    newDiv.setAttribute('data-paragraph-index', '0')
-    newDiv.className = 'transition-opacity duration-200 min-h-[1.75rem]'
-    newDiv.textContent = '\u200B'
+    let currentParagraph = findCurrentParagraph(range.startContainer)
 
-    range.deleteContents()
-    range.insertNode(newDiv)
+    if (!currentParagraph) {
+      createFallbackParagraph()
+      return
+    }
 
-    const newRange = document.createRange()
-    newRange.setStart(newDiv, 0)
-    newRange.collapse(true)
-    selection.removeAllRanges()
-    selection.addRange(newRange)
+    const { textBefore, textAfter } = splitParagraphAtCursor(currentParagraph, range)
+
+    currentParagraph.textContent = textBefore || '\u200B'
+
+    const newParagraph = createParagraphElement(textAfter)
+    insertParagraphAfter(newParagraph, currentParagraph)
+
+    setCursorAtParagraphStart(newParagraph)
 
     reindexParagraphs()
     updateFocusedParagraph()
 
-    const text = extractText()
     isInternalUpdate = true
-    emit('update:modelValue', text)
+    emit('update:modelValue', extractText())
     isInternalUpdate = false
+  } catch (error) {
+    console.error('Error handling Enter key:', error)
   }
+}
+
+const findCurrentParagraph = (node: Node): HTMLElement | undefined => {
+  let current: Node | null = node
+
+  while (current && current !== editorRef.value) {
+    if (
+      current.nodeType === Node.ELEMENT_NODE &&
+      (current as HTMLElement).hasAttribute('data-paragraph-index')
+    ) {
+      return current as HTMLElement
+    }
+    current = current.parentNode
+  }
+
+  return undefined
+}
+
+const splitParagraphAtCursor = (
+  paragraph: HTMLElement,
+  range: Range,
+): { textBefore: string; textAfter: string } => {
+  const fullText = paragraph.textContent || ''
+
+  let cursorOffset = 0
+  const treeWalker = document.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT)
+
+  let currentNode = treeWalker.nextNode()
+  while (currentNode) {
+    if (currentNode === range.startContainer) {
+      cursorOffset += range.startOffset
+      break
+    }
+    cursorOffset += currentNode.textContent?.length || 0
+    currentNode = treeWalker.nextNode()
+  }
+
+  const textBefore = fullText.substring(0, cursorOffset)
+  const textAfter = fullText.substring(cursorOffset)
+
+  return { textBefore, textAfter }
+}
+
+const createParagraphElement = (content: string): HTMLElement => {
+  const div = document.createElement('div')
+  div.setAttribute('data-paragraph-index', '0')
+  div.className = 'transition-opacity duration-200 min-h-[1.75rem]'
+  div.textContent = content || '\u200B'
+  return div
+}
+
+const insertParagraphAfter = (newParagraph: HTMLElement, currentParagraph: HTMLElement) => {
+  const nextSibling = currentParagraph.nextSibling
+  if (nextSibling) {
+    editorRef.value?.insertBefore(newParagraph, nextSibling)
+  } else {
+    editorRef.value?.appendChild(newParagraph)
+  }
+}
+
+const setCursorAtParagraphStart = (paragraph: HTMLElement) => {
+  const selection = window.getSelection()
+  if (!selection) return
+
+  const range = document.createRange()
+
+  if (paragraph.firstChild) {
+    range.setStart(paragraph.firstChild, 0)
+  } else {
+    range.setStart(paragraph, 0)
+  }
+
+  range.collapse(true)
+  selection.removeAllRanges()
+  selection.addRange(range)
+}
+
+const createFallbackParagraph = () => {
+  if (!editorRef.value) return
+
+  const newParagraph = createParagraphElement('')
+  editorRef.value.appendChild(newParagraph)
+  setCursorAtParagraphStart(newParagraph)
+
+  reindexParagraphs()
+  updateFocusedParagraph()
+
+  isInternalUpdate = true
+  emit('update:modelValue', extractText())
+  isInternalUpdate = false
 }
 
 const extractText = (): string => {
