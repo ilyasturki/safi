@@ -1,18 +1,6 @@
 <template>
   <div :class="isDark ? 'dark' : ''">
     <div class="min-h-screen transition-colors duration-200 bg-[#fafafa] dark:bg-[#0a0a0a]">
-      <!-- Theme Toggle -->
-      <div class="fixed top-6 right-6">
-        <button
-          @click="toggleTheme"
-          class="w-10 h-10 rounded-full bg-[#e5e5e5] dark:bg-[#1a1a1a] flex items-center justify-center transition-colors duration-200 hover:bg-[#d4d4d4] dark:hover:bg-[#2a2a2a]"
-          :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
-        >
-          <span v-if="isDark" class="text-xl">☀️</span>
-          <span v-else class="text-xl">🌙</span>
-        </button>
-      </div>
-
       <!-- Editor Container -->
       <div class="flex items-center justify-center min-h-screen px-6 py-12">
         <div class="w-full max-w-[70ch]">
@@ -71,9 +59,5 @@ const handleInput = () => {
   }, DEBOUNCE_MS)
 }
 
-// Theme toggle
-const toggleTheme = () => {
-  isDark.value = !isDark.value
-}
 </script>
 
