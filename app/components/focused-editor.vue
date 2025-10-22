@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 
 const props = withDefaults(
   defineProps<{
@@ -40,6 +40,7 @@ const focusedParagraphIndex = ref(0)
 const isEmpty = computed(() => !props.modelValue)
 
 let isInternalUpdate = false
+let isProcessingEnter = false
 
 const updateFocusedParagraph = () => {
   if (!editorRef.value) return
@@ -85,21 +86,31 @@ const reindexParagraphs = () => {
   })
 }
 
-const handleKeydown = (e: KeyboardEvent) => {
+const handleKeydown = async (e: KeyboardEvent) => {
   if (e.key !== 'Enter' || e.shiftKey) return
+  if (isProcessingEnter) return
 
   e.preventDefault()
+  isProcessingEnter = true
 
   const selection = window.getSelection()
-  if (!selection || selection.rangeCount === 0) return
-  if (!editorRef.value) return
+  if (!selection || selection.rangeCount === 0) {
+    isProcessingEnter = false
+    return
+  }
+  if (!editorRef.value) {
+    isProcessingEnter = false
+    return
+  }
 
   try {
+    isInternalUpdate = true
+
     const range = selection.getRangeAt(0)
-    let currentParagraph = findCurrentParagraph(range.startContainer)
+    const currentParagraph = findCurrentParagraph(range.startContainer)
 
     if (!currentParagraph) {
-      createFallbackParagraph()
+      await createFallbackParagraph()
       return
     }
 
@@ -110,16 +121,23 @@ const handleKeydown = (e: KeyboardEvent) => {
     const newParagraph = createParagraphElement(textAfter)
     insertParagraphAfter(newParagraph, currentParagraph)
 
+    console.log('📊 [DOM] Current paragraph now has:', `"${(currentParagraph.textContent || '').replace(/\u200B/g, '[ZERO-WIDTH]')}"`)
+    console.log('📊 [DOM] New paragraph has:', `"${(newParagraph.textContent || '').replace(/\u200B/g, '[ZERO-WIDTH]')}"`)
+    console.log('📊 [DOM] Both have same content?', currentParagraph.textContent === newParagraph.textContent)
+
+    await nextTick()
+
     setCursorAtParagraphStart(newParagraph)
 
     reindexParagraphs()
     updateFocusedParagraph()
 
-    isInternalUpdate = true
     emit('update:modelValue', extractText())
-    isInternalUpdate = false
   } catch (error) {
     console.error('Error handling Enter key:', error)
+  } finally {
+    isInternalUpdate = false
+    isProcessingEnter = false
   }
 }
 
@@ -144,6 +162,28 @@ const splitParagraphAtCursor = (
   range: Range,
 ): { textBefore: string; textAfter: string } => {
   const fullText = paragraph.textContent || ''
+  const displayText = fullText.replace(/\u200B/g, '[ZERO-WIDTH]')
+
+  console.log('✂️ [Split] Paragraph text:', `"${displayText}"`)
+  console.log('✂️ [Split] Container type:', range.startContainer.nodeType === Node.TEXT_NODE ? 'TEXT_NODE' : 'ELEMENT_NODE')
+  console.log('✂️ [Split] Container:', range.startContainer)
+  console.log('✂️ [Split] Offset:', range.startOffset)
+
+  if (range.startContainer === paragraph) {
+    console.log('✂️ [Split] → Container is paragraph itself')
+    if (range.startOffset === 0) {
+      console.log('✂️ [Split] → Offset 0: before="" after="' + displayText + '"')
+      return { textBefore: '', textAfter: fullText }
+    } else {
+      console.log('✂️ [Split] → Offset > 0: before="' + displayText + '" after=""')
+      return { textBefore: fullText, textAfter: '' }
+    }
+  }
+
+  if (!paragraph.contains(range.startContainer)) {
+    console.log('✂️ [Split] → Container not in paragraph!')
+    return { textBefore: '', textAfter: fullText }
+  }
 
   let cursorOffset = 0
   const treeWalker = document.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT)
@@ -152,6 +192,7 @@ const splitParagraphAtCursor = (
   while (currentNode) {
     if (currentNode === range.startContainer) {
       cursorOffset += range.startOffset
+      console.log('✂️ [Split] → Found in text node, offset:', cursorOffset)
       break
     }
     cursorOffset += currentNode.textContent?.length || 0
@@ -160,6 +201,10 @@ const splitParagraphAtCursor = (
 
   const textBefore = fullText.substring(0, cursorOffset)
   const textAfter = fullText.substring(cursorOffset)
+
+  const displayBefore = textBefore.replace(/\u200B/g, '[ZERO-WIDTH]')
+  const displayAfter = textAfter.replace(/\u200B/g, '[ZERO-WIDTH]')
+  console.log('✂️ [Split] → Result: before="' + displayBefore + '" after="' + displayAfter + '"')
 
   return { textBefore, textAfter }
 }
@@ -182,34 +227,67 @@ const insertParagraphAfter = (newParagraph: HTMLElement, currentParagraph: HTMLE
 }
 
 const setCursorAtParagraphStart = (paragraph: HTMLElement) => {
+  const displayText = (paragraph.textContent || '').replace(/\u200B/g, '[ZERO-WIDTH]')
+  console.log('🎯 [Cursor] Setting cursor in:', `"${displayText}"`)
+
   const selection = window.getSelection()
-  if (!selection) return
-
-  const range = document.createRange()
-
-  if (paragraph.firstChild) {
-    range.setStart(paragraph.firstChild, 0)
-  } else {
-    range.setStart(paragraph, 0)
+  if (!selection) {
+    console.log('🎯 [Cursor] ❌ No selection')
+    return
   }
 
-  range.collapse(true)
-  selection.removeAllRanges()
-  selection.addRange(range)
+  try {
+    const range = document.createRange()
+    const textNode = paragraph.firstChild
+    console.log('🎯 [Cursor] First child type:', textNode?.nodeType === Node.TEXT_NODE ? 'TEXT_NODE' : 'OTHER')
+
+    if (textNode?.nodeType === Node.TEXT_NODE) {
+      range.setStart(textNode, 0)
+      range.collapse(true)
+      console.log('🎯 [Cursor] ✅ Set at text node start')
+    } else {
+      range.selectNodeContents(paragraph)
+      range.collapse(true)
+      console.log('🎯 [Cursor] ✅ Set using selectNodeContents')
+    }
+
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    // Verify where cursor actually ended up
+    setTimeout(() => {
+      const verifySelection = window.getSelection()
+      if (verifySelection && verifySelection.rangeCount > 0) {
+        const verifyRange = verifySelection.getRangeAt(0)
+        const actualContainer = verifyRange.startContainer
+        const actualParagraph = findCurrentParagraph(actualContainer)
+        const actualText = (actualParagraph?.textContent || '').replace(/\u200B/g, '[ZERO-WIDTH]')
+        console.log('🔍 [Verify] Cursor is actually in:', `"${actualText}"`)
+        console.log('🔍 [Verify] Is in target paragraph?', actualParagraph === paragraph)
+      }
+    }, 0)
+  } catch (error) {
+    console.error('🎯 [Cursor] ❌ Error:', error)
+  }
 }
 
-const createFallbackParagraph = () => {
+const createFallbackParagraph = async () => {
   if (!editorRef.value) return
+
+  isInternalUpdate = true
 
   const newParagraph = createParagraphElement('')
   editorRef.value.appendChild(newParagraph)
+
+  await nextTick()
+
   setCursorAtParagraphStart(newParagraph)
 
   reindexParagraphs()
   updateFocusedParagraph()
 
-  isInternalUpdate = true
   emit('update:modelValue', extractText())
+
   isInternalUpdate = false
 }
 
@@ -223,13 +301,11 @@ const extractText = (): string => {
 }
 
 const handleInput = () => {
+  if (isInternalUpdate) return
   if (!editorRef.value) return
 
   const text = extractText()
-
-  isInternalUpdate = true
   emit('update:modelValue', text)
-  isInternalUpdate = false
 }
 
 watch(
