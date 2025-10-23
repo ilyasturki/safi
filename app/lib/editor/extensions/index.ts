@@ -4,15 +4,24 @@ import { keymapsExtension } from './keymap'
 import { liveMarkers } from './live-markers'
 import { markdownExtension } from './markdown'
 import { createPlaceholder } from './placeholder'
+import { sentenceFocusExtension } from './sentence-focus'
 import { noSpell } from './spellcheck'
 
 export interface UseExtensionsOptions {
+    /** @default undefined */
     placeholder?: string
+    /** @default false */
     enableLiveMarkers?: boolean
+    /** @default false */
+    enableSentenceFocus?: boolean
 }
 
 export function useExtensions(options: UseExtensionsOptions = {}) {
-    const { placeholder, enableLiveMarkers = false } = options
+    const {
+        placeholder,
+        enableLiveMarkers = false,
+        enableSentenceFocus = false,
+    } = options
 
     const extensions = [
         baseExtensions,
@@ -28,7 +37,10 @@ export function useExtensions(options: UseExtensionsOptions = {}) {
         extensions.push(...liveMarkers)
     }
 
-    // Add placeholder if provided
+    if (enableSentenceFocus) {
+        extensions.push(...sentenceFocusExtension)
+    }
+
     if (placeholder) {
         extensions.push(createPlaceholder(placeholder))
     }

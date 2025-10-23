@@ -2,6 +2,7 @@ import { EditorState } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
 
 import { useExtensions } from '~/lib/editor/extensions'
+import type { UseExtensionsOptions } from '~/lib/editor/extensions'
 import { createLogger, LogLevels } from '~/utils/create-logger'
 
 const logger = createLogger({
@@ -9,9 +10,8 @@ const logger = createLogger({
     level: LogLevels.warn,
 })
 
-export interface UseCodeMirrorOptions {
-    placeholder?: string
-    enableLiveMarkers?: boolean
+export interface UseCodeMirrorOptions extends UseExtensionsOptions {
+    /** @default undefined */
     onContentChange?: (content: string) => void
 }
 
@@ -20,7 +20,7 @@ export function useCodeMirror(
     editorElement: Ref<HTMLElement | null>,
     options: UseCodeMirrorOptions = {},
 ) {
-    const { placeholder, enableLiveMarkers, onContentChange } = options
+    const { onContentChange, ...extensionsOptions } = options
 
     const isReady = ref(false)
     const isFocused = ref(false)
@@ -41,7 +41,7 @@ export function useCodeMirror(
         }
     })
 
-    const extensions = useExtensions({ placeholder, enableLiveMarkers })
+    const extensions = useExtensions(extensionsOptions)
 
     function createEditor() {
         if (!editorElement.value) {
