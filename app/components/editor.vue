@@ -56,7 +56,7 @@ defineExpose({
         @apply outline-none;
     }
     .cm-content {
-        @apply mx-auto min-h-full max-w-full p-5 text-lg md:max-w-2xl;
+        @apply mx-auto min-h-full max-w-full py-5 pr-5 pl-[calc(1.25rem+7ch)] text-lg md:max-w-2xl;
     }
 }
 </style>

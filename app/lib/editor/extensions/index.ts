@@ -1,5 +1,6 @@
 import { themeExtension } from '~/lib/editor/theme/theme-extension'
 import { baseExtensions } from './base-extensions'
+import { headingOutdentExtension } from './heading-outdent'
 import { keymapsExtension } from './keymap'
 import { liveMarkers } from './live-markers'
 import { markdownExtension } from './markdown'
@@ -31,6 +32,7 @@ export function useExtensions(options: UseExtensionsOptions = {}) {
 
         // Extra
         noSpell,
+        headingOutdentExtension,
     ]
 
     if (enableLiveMarkers) {
