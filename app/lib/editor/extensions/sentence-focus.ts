@@ -99,7 +99,7 @@ const sentenceFocusPlugin = ViewPlugin.fromClass(
 
 const sentenceFocusTheme = EditorView.baseTheme({
     '.cm-sentence-dimmed': {
-        opacity: '0.5',
+        opacity: '0.3',
     },
 })
 

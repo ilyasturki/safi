@@ -138,13 +138,15 @@ export function useCodeMirror(
         })
     }
 
+    const editorViewRef = computed(() => editorView)
+
     return {
         // State
         isReady: readonly(isReady),
         isFocused: readonly(isFocused),
 
         // Editor instance (for advanced usage)
-        editorView: readonly(ref(editorView)),
+        editorView: editorViewRef,
 
         // Methods
         focus,

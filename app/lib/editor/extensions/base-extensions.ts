@@ -4,6 +4,7 @@ import { bracketMatching, indentOnInput } from '@codemirror/language'
 import { highlightSelectionMatches } from '@codemirror/search'
 import { EditorState } from '@codemirror/state'
 import { dropCursor, EditorView, highlightSpecialChars } from '@codemirror/view'
+import { minimalSelection } from './minimal-selection'
 
 // https://codemirror.net/docs/extensions/
 export const baseExtensions = [
@@ -17,7 +18,7 @@ export const baseExtensions = [
     history(),
 
     // Presentation Features
-    // drawSelection(),
+    minimalSelection,
     EditorView.lineWrapping,
     highlightSpecialChars(),
     // scrollPastEnd(),
