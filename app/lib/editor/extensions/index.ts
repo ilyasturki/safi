@@ -12,7 +12,7 @@ export interface UseExtensionsOptions {
     placeholder?: string
     /** @default false */
     enableLiveMarkers?: boolean
-    /** @default false */
+    /** @default true */
     enableSentenceFocus?: boolean
 }
 
@@ -20,7 +20,7 @@ export function useExtensions(options: UseExtensionsOptions = {}) {
     const {
         placeholder,
         enableLiveMarkers = false,
-        enableSentenceFocus = false,
+        enableSentenceFocus = true,
     } = options
 
     const extensions = [

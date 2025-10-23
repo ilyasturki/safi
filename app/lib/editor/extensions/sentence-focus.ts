@@ -10,7 +10,7 @@ function findSentenceBoundary(
     text: string,
     cursorPos: number,
 ): SentenceBoundary {
-    const sentenceEnders = /[.!?](?=\s|$)|\n\n/g
+    const sentenceEnders = /[!.?](?=\s|$)|\n/gu
 
     let sentenceStart = 0
     let sentenceEnd = text.length
@@ -18,15 +18,20 @@ function findSentenceBoundary(
     let match: RegExpExecArray | null
     let lastEnd = 0
 
-    while ((match = sentenceEnders.exec(text)) !== null) {
+    match = sentenceEnders.exec(text)
+    while (match !== null) {
         const matchEnd = match.index + match[0].length
 
         if (matchEnd <= cursorPos) {
             sentenceStart = matchEnd
-            while (sentenceStart < text.length && /\s/.test(text[sentenceStart])) {
+            while (
+                sentenceStart < text.length
+                && /\s/u.test(text.charAt(sentenceStart))
+            ) {
                 sentenceStart++
             }
             lastEnd = matchEnd
+            match = sentenceEnders.exec(text)
         } else {
             sentenceEnd = matchEnd
             break
@@ -35,7 +40,10 @@ function findSentenceBoundary(
 
     if (cursorPos < sentenceStart) {
         sentenceStart = lastEnd
-        while (sentenceStart < text.length && /\s/.test(text[sentenceStart])) {
+        while (
+            sentenceStart < text.length
+            && /\s/u.test(text.charAt(sentenceStart))
+        ) {
             sentenceStart++
         }
     }
@@ -91,7 +99,7 @@ const sentenceFocusPlugin = ViewPlugin.fromClass(
 
 const sentenceFocusTheme = EditorView.baseTheme({
     '.cm-sentence-dimmed': {
-        opacity: '0.3',
+        opacity: '0.5',
     },
 })
 
