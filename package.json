@@ -1,7 +1,7 @@
 {
     "name": "pure-editor",
-    "private": true,
     "type": "module",
+    "private": true,
     "scripts": {
         "prepare": "nuxt prepare",
         "dev": "nuxt dev",
@@ -11,6 +11,8 @@
         "typecheck": "nuxt prepare && vue-tsc -b --noEmit",
         "format": "prettier --write '**/*.{js,ts,vue,css,scss,html,json,md,yml}'",
         "format:check": "prettier --check '**/*.{js,ts,vue,css,scss,html,json,md,yml}'",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
         "clear": "rm -rf .nuxt/ .output/ node_modules/ dist/"
     },
     "dependencies": {
@@ -22,6 +24,8 @@
         "vue-router": "^4.6.3"
     },
     "devDependencies": {
+        "@ilyasso/eslint-config": "^0.0.3",
+        "eslint": "^9.38.0",
         "prettier": "^3.6.2",
         "prettier-plugin-tailwindcss": "^0.7.1",
         "typescript": "^5.9.3",

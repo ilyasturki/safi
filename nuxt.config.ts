@@ -10,6 +10,16 @@ export default defineNuxtConfig({
             enabled: true,
         },
     },
+
+    // Disable automatic imports
+    imports: {
+        scan: false,
+    },
+    components: false,
+    // vueuse: {
+    //     autoImports: false,
+    // },
+
     typescript: {
         typeCheck: true,
     },
