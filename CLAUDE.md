@@ -42,6 +42,9 @@ Pure Editor is a minimalist text-editing web application built with Nuxt 4 and V
     - **`/types`** - TypeScript type definitions
     - **`/assets/css`** - TailwindCSS styles, global styles, and animations
     - **`/plugins`** - Nuxt plugins for global functionality
+    - **`/lib/editor`** - CodeMirror 6 editor integration
+        - **`/extensions`** - CodeMirror extensions (markdown, keymaps, spellcheck, placeholder, live-markers)
+        - **`/theme`** - Custom editor theme with syntax highlighting
 
 # Code Style Requirements
 

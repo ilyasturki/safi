@@ -6,7 +6,14 @@ import { markdownExtension } from './markdown'
 import { createPlaceholder } from './placeholder'
 import { noSpell } from './spellcheck'
 
-export function useExtensions(placeholder?: string) {
+export interface UseExtensionsOptions {
+    placeholder?: string
+    enableLiveMarkers?: boolean
+}
+
+export function useExtensions(options: UseExtensionsOptions = {}) {
+    const { placeholder, enableLiveMarkers = false } = options
+
     const extensions = [
         baseExtensions,
         keymapsExtension,
@@ -15,8 +22,11 @@ export function useExtensions(placeholder?: string) {
 
         // Extra
         noSpell,
-        liveMarkers,
     ]
+
+    if (enableLiveMarkers) {
+        extensions.push(...liveMarkers)
+    }
 
     // Add placeholder if provided
     if (placeholder) {

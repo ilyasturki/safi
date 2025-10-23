@@ -11,6 +11,7 @@ const logger = createLogger({
 
 export interface UseCodeMirrorOptions {
     placeholder?: string
+    enableLiveMarkers?: boolean
     onContentChange?: (content: string) => void
 }
 
@@ -19,7 +20,7 @@ export function useCodeMirror(
     editorElement: Ref<HTMLElement | null>,
     options: UseCodeMirrorOptions = {},
 ) {
-    const { placeholder, onContentChange } = options
+    const { placeholder, enableLiveMarkers, onContentChange } = options
 
     const isReady = ref(false)
     const isFocused = ref(false)
@@ -40,7 +41,7 @@ export function useCodeMirror(
         }
     })
 
-    const extensions = useExtensions(placeholder)
+    const extensions = useExtensions({ placeholder, enableLiveMarkers })
 
     function createEditor() {
         if (!editorElement.value) {

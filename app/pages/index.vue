@@ -10,7 +10,7 @@ const text = useLocalStorage('pure-editor:markdown-text', '', {
 </script>
 
 <template>
-    <div class="flex min-h-screen items-center justify-center px-6 py-12">
+    <div class="flex min-h-screen items-start justify-center">
         <div class="w-full max-w-[70ch]">
             <MarkdownEditor
                 v-model:content="text"
