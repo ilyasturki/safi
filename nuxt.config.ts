@@ -11,6 +11,10 @@ export default defineNuxtConfig({
         },
     },
 
+    runtimeConfig: {
+        workspacePath: '',
+    },
+
     // Disable automatic imports
     imports: {
         scan: false,

@@ -52,11 +52,11 @@ const selectionPlugin = ViewPlugin.fromClass(
             if (!view.hasFocus) return []
 
             const rects: SelectionRect[] = []
-            const { state, scrollDOM } = view
+            const { state, scrollDOM, contentDOM } = view
 
             const containerRect = scrollDOM.getBoundingClientRect()
-            const lineHeight = parseFloat(
-                getComputedStyle(view.contentDOM).lineHeight,
+            const lineHeight = Number.parseFloat(
+                getComputedStyle(contentDOM).lineHeight,
             )
 
             for (const range of state.selection.ranges) {

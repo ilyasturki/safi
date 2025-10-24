@@ -9,6 +9,7 @@ Pure Editor is a minimalist text-editing web application built with Nuxt 4 and V
 - **Minimalist aesthetic**: Clean, purposeful design with ample whitespace, subtle interactions, and focus on content over chrome
 - **Mobile-first**: All interactions must work seamlessly on mobile devices with touch-friendly interfaces
 - **Spatial consistency**: New features should feel like natural extensions of existing workflows
+- **File-based storage**: All content is stored as markdown (.md) files in a configured workspace directory on the server, providing direct file system access and portability
 
 # Quick Reference
 
@@ -45,6 +46,11 @@ Pure Editor is a minimalist text-editing web application built with Nuxt 4 and V
     - **`/lib/editor`** - CodeMirror 6 editor integration
         - **`/extensions`** - CodeMirror extensions (markdown, keymaps, spellcheck, placeholder, live-markers)
         - **`/theme`** - Custom editor theme with syntax highlighting
+- **`/server`** - Nitro server directory (backend API)
+    - **`/api`** - API endpoints for file operations
+    - **`/utils`** - Server-side utilities (workspace management, path validation)
+- **`/shared`** - Shared code between client and server
+    - **`/types`** - TypeScript type definitions used by both frontend and backend
 
 # Code Style Requirements
 
