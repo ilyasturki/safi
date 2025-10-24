@@ -52,9 +52,9 @@ const minimalSelectionPlugin = ViewPlugin.fromClass(
             if (!view.hasFocus) return []
 
             const rects: SelectionRect[] = []
-            const { state } = view
+            const { state, scrollDOM } = view
 
-            const containerRect = view.scrollDOM.getBoundingClientRect()
+            const containerRect = scrollDOM.getBoundingClientRect()
 
             for (const range of state.selection.ranges) {
                 if (range.empty) continue
@@ -63,28 +63,77 @@ const minimalSelectionPlugin = ViewPlugin.fromClass(
 
                 let pos = from
                 while (pos <= to) {
-                    const line = state.doc.lineAt(pos)
-                    const lineIsEmpty = line.length === 0
+                    const block = view.lineBlockAt(pos)
 
-                    const lineStart = Math.max(from, line.from)
-                    const lineEnd = Math.min(to, line.to)
+                    const selStart = Math.max(from, block.from)
+                    const selEnd = Math.min(to, block.to)
 
-                    const startCoords = view.coordsAtPos(lineStart)
-                    const endCoords = view.coordsAtPos(lineEnd)
+                    const blockContent = state.doc.sliceString(
+                        block.from,
+                        block.to,
+                    )
+                    const isEmptyBlock = blockContent.length === 0
 
-                    if (startCoords && endCoords) {
-                        rects.push({
-                            top: startCoords.top - containerRect.top,
-                            height: startCoords.bottom - startCoords.top,
-                            left: startCoords.left - containerRect.left,
-                            width:
-                                lineIsEmpty ? '1ch' : (
-                                    `${endCoords.right - startCoords.left}px`
-                                ),
-                        })
+                    if (isEmptyBlock) {
+                        const coords = view.coordsAtPos(selStart)
+                        if (coords) {
+                            rects.push({
+                                top: coords.top - containerRect.top,
+                                height: coords.bottom - coords.top,
+                                left: coords.left - containerRect.left,
+                                width: '1ch',
+                            })
+                        }
+                    } else {
+                        const segments: { start: number; end: number }[] = []
+                        let segmentStart = selStart
+                        let lastCoords = view.coordsAtPos(selStart)
+
+                        if (lastCoords) {
+                            for (
+                                let checkPos = selStart + 1;
+                                checkPos <= selEnd;
+                                checkPos++
+                            ) {
+                                const coords = view.coordsAtPos(checkPos)
+                                if (!coords) continue
+
+                                if (Math.abs(coords.top - lastCoords.top) > 2) {
+                                    segments.push({
+                                        start: segmentStart,
+                                        end: checkPos - 1,
+                                    })
+                                    segmentStart = checkPos
+                                    lastCoords = coords
+                                }
+                            }
+
+                            segments.push({ start: segmentStart, end: selEnd })
+
+                            for (const segment of segments) {
+                                const startCoords = view.coordsAtPos(
+                                    segment.start,
+                                )
+                                const endCoords = view.coordsAtPos(segment.end)
+
+                                if (startCoords && endCoords) {
+                                    rects.push({
+                                        top:
+                                            startCoords.top - containerRect.top,
+                                        height:
+                                            startCoords.bottom
+                                            - startCoords.top,
+                                        left:
+                                            startCoords.left
+                                            - containerRect.left,
+                                        width: `${endCoords.right - startCoords.left}px`,
+                                    })
+                                }
+                            }
+                        }
                     }
 
-                    pos = line.to + 1
+                    pos = block.to + 1
                 }
             }
 
