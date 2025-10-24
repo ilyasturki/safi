@@ -5,7 +5,7 @@ import { keymapsExtension } from './keymap'
 import { liveMarkers } from './live-markers'
 import { markdownExtension } from './markdown'
 import { createPlaceholder } from './placeholder'
-import { sentenceFocusExtension } from './sentence-focus'
+import { focusModeExtension } from './focus-mode'
 import { noSpell } from './spellcheck'
 
 export interface UseExtensionsOptions {
@@ -14,14 +14,14 @@ export interface UseExtensionsOptions {
     /** @default false */
     enableLiveMarkers?: boolean
     /** @default true */
-    enableSentenceFocus?: boolean
+    enableFocusMode?: boolean
 }
 
 export function useExtensions(options: UseExtensionsOptions = {}) {
     const {
         placeholder,
         enableLiveMarkers = false,
-        enableSentenceFocus = true,
+        enableFocusMode = true,
     } = options
 
     const extensions = [
@@ -39,8 +39,8 @@ export function useExtensions(options: UseExtensionsOptions = {}) {
         extensions.push(...liveMarkers)
     }
 
-    if (enableSentenceFocus) {
-        extensions.push(...sentenceFocusExtension)
+    if (enableFocusMode) {
+        extensions.push(...focusModeExtension)
     }
 
     if (placeholder) {

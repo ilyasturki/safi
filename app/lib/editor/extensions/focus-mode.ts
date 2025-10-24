@@ -51,7 +51,7 @@ function findSentenceBoundary(
     return { start: sentenceStart, end: sentenceEnd }
 }
 
-const sentenceFocusPlugin = ViewPlugin.fromClass(
+const focusModePlugin = ViewPlugin.fromClass(
     class {
         decorations: DecorationSet
 
@@ -68,24 +68,41 @@ const sentenceFocusPlugin = ViewPlugin.fromClass(
         buildDecorations(view: EditorView): DecorationSet {
             const decorations = []
             const { state } = view
-            const cursorPos = state.selection.main.head
+            const selection = state.selection.main
             const text = state.doc.toString()
 
-            const { start, end } = findSentenceBoundary(text, cursorPos)
+            let focusStart: number
+            let focusEnd: number
 
-            if (start > 0) {
+            if (selection.from === selection.to) {
+                const cursorPos = selection.head
+                const { start, end } = findSentenceBoundary(text, cursorPos)
+                focusStart = start
+                focusEnd = end
+            } else {
+                const selectionStart = selection.from
+                const selectionEnd = selection.to
+
+                const startBoundary = findSentenceBoundary(text, selectionStart)
+                const endBoundary = findSentenceBoundary(text, selectionEnd)
+
+                focusStart = startBoundary.start
+                focusEnd = endBoundary.end
+            }
+
+            if (focusStart > 0) {
                 decorations.push(
                     Decoration.mark({
-                        class: 'cm-sentence-dimmed',
-                    }).range(0, start),
+                        class: 'cm-focus-dimmed',
+                    }).range(0, focusStart),
                 )
             }
 
-            if (end < text.length) {
+            if (focusEnd < text.length) {
                 decorations.push(
                     Decoration.mark({
-                        class: 'cm-sentence-dimmed',
-                    }).range(end, text.length),
+                        class: 'cm-focus-dimmed',
+                    }).range(focusEnd, text.length),
                 )
             }
 
@@ -97,10 +114,10 @@ const sentenceFocusPlugin = ViewPlugin.fromClass(
     },
 )
 
-const sentenceFocusTheme = EditorView.baseTheme({
-    '.cm-sentence-dimmed': {
+const focusModeTheme = EditorView.baseTheme({
+    '.cm-focus-dimmed': {
         opacity: '0.3',
     },
 })
 
-export const sentenceFocusExtension = [sentenceFocusPlugin, sentenceFocusTheme]
+export const focusModeExtension = [focusModePlugin, focusModeTheme]
