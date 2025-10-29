@@ -3,6 +3,7 @@ import { watchDebounced } from '@vueuse/core'
 import Editor from '~/components/editor.vue'
 import ExplorerDialog from '~/components/explorer-dialog.vue'
 import { useKeyboardShortcut } from '~/composables/use-keyboard-shortcut'
+import { useLastEditedFile } from '~/composables/use-last-edited-file'
 import type { FileResponse } from '~~/shared/types/api'
 
 const props = defineProps<{
@@ -17,6 +18,8 @@ watchEffect(() => {
 
 const DEBOUNCE_DELAY = 300
 
+const { saveLastEditedFile } = useLastEditedFile()
+
 watchDebounced(
     content,
     async (newContent) => {
@@ -24,6 +27,7 @@ watchDebounced(
             method: 'PUT',
             body: { content: newContent },
         })
+        saveLastEditedFile(props.file.path)
     },
     { debounce: DEBOUNCE_DELAY },
 )
@@ -46,24 +50,15 @@ const currentDirectory = computed(() => {
     segments.pop()
     return segments.length === 0 ? '' : `/${segments.join('/')}`
 })
-
-watch(
-    currentDirectory,
-    () => {
-        console.log('Directory changed', currentDirectory.value)
-    },
-    { immediate: true },
-)
 </script>
 
 <template>
     <div class="flex min-h-screen items-start justify-center">
-        <div class="w-full max-w-[70ch]">
-            <Editor
-                v-model:content="content"
-                placeholder="Start typing your markdown..."
-            />
-        </div>
+        <Editor
+            v-model:content="content"
+            placeholder="Start typing your markdown..."
+            class="w-full max-w-[70ch]"
+        />
     </div>
     <ExplorerDialog
         v-model:open="isExplorerOpen"
