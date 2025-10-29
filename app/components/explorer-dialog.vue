@@ -1,46 +1,28 @@
 <script setup lang="ts">
-import Explorer from '~/components/explorer.vue'
-import type { FolderResponse } from '~~/shared/types/api'
-
-interface ExplorerDialogProps {
-    initialPath?: string
-}
+import ManagedExplorer from '~/components/managed-explorer.vue'
 
 const isOpen = defineModel<boolean>('open', { default: false })
 
-const props = withDefaults(defineProps<ExplorerDialogProps>(), {
-    // root path
-    initialPath: '',
-})
-
-const dialogEl = useTemplateRef('dialogEl')
-
-const currentPath = ref(props.initialPath)
-const { data: folder, refresh } = await useFetch<FolderResponse>(
-    () => `/api/folders/${currentPath.value}`,
+const props = withDefaults(
+    defineProps<{
+        initialPath?: string
+    }>(),
     {
-        immediate: false,
+        initialPath: '',
     },
 )
 
-watch(isOpen, async (open) => {
+const currentFolderPath = ref(props.initialPath)
+const dialogEl = useTemplateRef('dialogEl')
+
+watch(isOpen, (open) => {
     if (open) {
-        await refresh()
+        // await refresh()
         dialogEl.value?.showModal()
     } else {
         dialogEl.value?.close()
     }
 })
-
-function handleFolderClick(path: string) {
-    currentPath.value = path
-    // refresh()
-}
-
-function handleFileClick(path: string) {
-    isOpen.value = false
-    navigateTo(`/edit/${path}`)
-}
 
 function handleClose() {
     isOpen.value = false
@@ -54,11 +36,6 @@ function handleClose() {
         closedby="any"
         @close="handleClose"
     >
-        <Explorer
-            v-if="folder"
-            :folder="folder"
-            @folder-click="handleFolderClick"
-            @file-click="handleFileClick"
-        />
+        <ManagedExplorer :folder-path="currentFolderPath" />
     </dialog>
 </template>

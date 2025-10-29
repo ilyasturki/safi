@@ -46,6 +46,14 @@ const currentDirectory = computed(() => {
     segments.pop()
     return segments.length === 0 ? '' : `/${segments.join('/')}`
 })
+
+watch(
+    currentDirectory,
+    () => {
+        console.log('Directory changed', currentDirectory.value)
+    },
+    { immediate: true },
+)
 </script>
 
 <template>
