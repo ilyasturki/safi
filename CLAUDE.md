@@ -1,8 +1,8 @@
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-# About Pure Editor
+# About Safi
 
-Pure Editor is a minimalist text-editing web application built with Nuxt 4 and Vue 3. The interface provides a distraction-free, monospace editing surface. It is designed primarily as a self-hosted application, giving users full control over their data and environment.
+Safi is a minimalist text-editing web application built with Nuxt 4 and Vue 3. The interface provides a distraction-free, monospace editing surface. It is designed primarily as a self-hosted application, giving users full control over their data and environment.
 
 # Design Philosophy
 

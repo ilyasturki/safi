@@ -1,6 +1,6 @@
 import { useLocalStorage } from '@vueuse/core'
 
-const STORAGE_KEY = 'pure-editor:last-edited-file'
+const STORAGE_KEY = 'safi:last-edited-file'
 
 export function useLastEditedFile() {
     const lastEditedFilePath = useLocalStorage<string | undefined>(

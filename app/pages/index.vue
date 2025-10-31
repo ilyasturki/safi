@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import LastEditedFileCard from '~/components/last-edited-file-card.vue'
-import ManagedExplorer from '~/components/managed-explorer.vue'
+// import LastEditedFileCard from '~/components/last-edited-file-card.vue'
+// import ManagedExplorer from '~/components/managed-explorer.vue'
 import ShortcutsDialog from '~/components/shortcuts-dialog.vue'
 import { useKeyboardShortcut } from '~/composables/use-keyboard-shortcut'
 
-const currentFolderPath = ref('')
+// const currentFolderPath = ref('')
 
 const { data: workspace } = await useFetch('/api/workspace')
 const workspacePath = computed(() => workspace.value?.path ?? '')
@@ -38,7 +38,7 @@ useKeyboardShortcut(
                 <h1
                     class="mb-3 font-mono text-4xl font-medium tracking-tight text-zinc-900 sm:text-5xl dark:text-zinc-100"
                 >
-                    Pure Editor
+                    Safi
                 </h1>
                 <p
                     class="font-mono text-sm text-zinc-600 sm:text-base dark:text-zinc-400"

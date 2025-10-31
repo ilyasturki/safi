@@ -1,10 +1,10 @@
 services:
-    pure-editor:
+    safi:
         build:
             context: .
             dockerfile: Dockerfile
-        image: pure-editor:latest
-        container_name: pure-editor
+        image: safi:latest
+        container_name: safi
         restart: unless-stopped
         ports:
             - '3000:3000'

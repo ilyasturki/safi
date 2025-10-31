@@ -1,6 +1,6 @@
-# Pure Editor
+# Safi
 
-A minimalist, distraction-free text editor for markdown files. Built with Nuxt 4, Vue 3, and CodeMirror 6, Pure Editor provides a clean, mobile-friendly interface focused on your content.
+A minimalist, distraction-free text editor for markdown files. Built with Nuxt 4, Vue 3, and CodeMirror 6, Safi provides a clean, mobile-friendly interface focused on your content.
 
 ## Features
 
@@ -14,14 +14,14 @@ A minimalist, distraction-free text editor for markdown files. Built with Nuxt 4
 
 ## Quick Start with Docker
 
-The easiest way to run Pure Editor is using Docker:
+The easiest way to run Safi is using Docker:
 
 ### Using Docker Compose (Recommended)
 
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd pure-editor
+cd safi
 ```
 
 2. Create a directory for your markdown files:
@@ -42,14 +42,14 @@ Your markdown files will be stored in the `./workspace` directory.
 
 ```bash
 # Build the image
-docker build -t pure-editor .
+docker build -t safi .
 
 # Run the container
 docker run -d \
-  --name pure-editor \
+  --name safi \
   -p 3000:3000 \
   -v $(pwd)/workspace:/app/workspace \
-  pure-editor
+  safi
 ```
 
 ### Customizing the Workspace Path
@@ -65,11 +65,11 @@ Or for `docker run`:
 
 ```bash
 docker run -d \
-  --name pure-editor \
+  --name safi \
   -p 3000:3000 \
   -v /your/custom/path:/app/workspace \
   -e NUXT_WORKSPACE_PATH=/app/workspace \
-  pure-editor
+  safi
 ```
 
 ## Development Setup
@@ -84,7 +84,7 @@ docker run -d \
 1. Clone the repository:
 ```bash
 git clone <repository-url>
-cd pure-editor
+cd safi
 ```
 
 2. Install dependencies:
@@ -149,7 +149,7 @@ NUXT_WORKSPACE_PATH=/app/workspace
 ## Project Structure
 
 ```
-pure-editor/
+safi/
 ├── app/                    # Main application directory
 │   ├── pages/             # File-based routing
 │   ├── components/        # Vue components
@@ -165,7 +165,7 @@ pure-editor/
 
 ## Security
 
-Pure Editor implements several security measures:
+Safi implements several security measures:
 
 - All file operations are restricted to the configured workspace directory
 - Path traversal attempts are blocked
