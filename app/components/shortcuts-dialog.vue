@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { shortcuts } from '~/composables/use-shortcuts'
+import type { ShortcutOptions } from '~/composables/use-shortcuts'
 import KeyboardKey from './keyboard-key.vue'
 
 const isOpen = defineModel<boolean>('open', { default: false })
@@ -17,23 +19,23 @@ function handleClose() {
     isOpen.value = false
 }
 
-interface Shortcut {
-    keys: string[]
-    description: string
+function getKeyDisplay(shortcut: ShortcutOptions): string[] {
+    const keys: string[] = []
+    const isMac = navigator.userAgent.toLowerCase().includes('mac')
+
+    if (shortcut.ctrl) {
+        keys.push(isMac ? '⌘' : 'Ctrl')
+    }
+    if (shortcut.alt) {
+        keys.push('Alt')
+    }
+    if (shortcut.shift) {
+        keys.push('Shift')
+    }
+    keys.push(shortcut.key)
+
+    return keys
 }
-
-const isMac = navigator.userAgent.toLowerCase().includes('mac')
-
-const shortcuts = computed<Shortcut[]>(() => [
-    {
-        keys: isMac ? ['⌘', 'K'] : ['Ctrl', 'K'],
-        description: 'Open file explorer',
-    },
-    {
-        keys: ['F1'],
-        description: 'Show keyboard shortcuts',
-    },
-])
 </script>
 
 <template>
@@ -63,7 +65,7 @@ const shortcuts = computed<Shortcut[]>(() => [
                     <span class="text-sm text-zinc-600 dark:text-zinc-400">
                         {{ shortcut.description }}
                     </span>
-                    <KeyboardKey :keys="shortcut.keys" />
+                    <KeyboardKey :keys="getKeyDisplay(shortcut)" />
                 </div>
             </div>
         </div>

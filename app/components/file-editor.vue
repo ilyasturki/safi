@@ -2,7 +2,7 @@
 import { watchDebounced } from '@vueuse/core'
 import Editor from '~/components/editor.vue'
 import ExplorerDialog from '~/components/explorer-dialog.vue'
-import { useKeyboardShortcut } from '~/composables/use-keyboard-shortcut'
+import { useShortcut } from '~/composables/use-shortcuts'
 import { useLastEditedFile } from '~/composables/use-last-edited-file'
 import type { FileResponse } from '~~/shared/types/api'
 
@@ -35,18 +35,9 @@ watchDebounced(
 
 const isExplorerOpen = ref(false)
 
-const isMac = navigator.userAgent.toLowerCase().includes('mac')
-
-useKeyboardShortcut(
-    {
-        key: 'k',
-        ctrl: !isMac,
-        meta: isMac,
-    },
-    () => {
-        isExplorerOpen.value = true
-    },
-)
+useShortcut('open-explorer', () => {
+    isExplorerOpen.value = true
+})
 
 const currentDirectory = computed(() => {
     const segments = props.file.path.split('/').filter(Boolean)

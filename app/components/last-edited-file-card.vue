@@ -66,4 +66,13 @@ function navigateToFile() {
             </span>
         </div>
     </button>
+    <div v-else>
+        <div class="flex items-center justify-center">
+            <span
+                class="font-mono text-sm font-medium text-zinc-500 dark:text-zinc-500"
+            >
+                No file selected
+            </span>
+        </div>
+    </div>
 </template>

@@ -2,7 +2,7 @@
 // import LastEditedFileCard from '~/components/last-edited-file-card.vue'
 // import ManagedExplorer from '~/components/managed-explorer.vue'
 import ShortcutsDialog from '~/components/shortcuts-dialog.vue'
-import { useKeyboardShortcut } from '~/composables/use-keyboard-shortcut'
+import { useShortcut } from '~/composables/use-shortcuts'
 
 // const currentFolderPath = ref('')
 
@@ -11,14 +11,9 @@ const workspacePath = computed(() => workspace.value?.path ?? '')
 
 const isShortcutsOpen = ref(false)
 
-useKeyboardShortcut(
-    {
-        key: 'F1',
-    },
-    () => {
-        isShortcutsOpen.value = !isShortcutsOpen.value
-    },
-)
+useShortcut('show-shortcuts', () => {
+    isShortcutsOpen.value = !isShortcutsOpen.value
+})
 </script>
 
 <template>
