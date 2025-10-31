@@ -22,7 +22,7 @@ interface Shortcut {
     description: string
 }
 
-const isMac = computed(() => navigator.platform.toLowerCase().includes('mac'))
+const isMac = navigator.userAgent.toLowerCase().includes('mac')
 
 const shortcuts = computed<Shortcut[]>(() => [
     {

@@ -34,11 +34,14 @@ watchDebounced(
 )
 
 const isExplorerOpen = ref(false)
+
+const isMac = navigator.userAgent.toLowerCase().includes('mac')
+
 useKeyboardShortcut(
     {
         key: 'k',
-        ctrl: !navigator.platform.toLowerCase().includes('mac'),
-        meta: navigator.platform.toLowerCase().includes('mac'),
+        ctrl: !isMac.value,
+        meta: isMac.value,
     },
     () => {
         isExplorerOpen.value = true
