@@ -2,11 +2,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 # About Pure Editor
 
-Pure Editor is a minimalist text-editing web application built with Nuxt 4 and Vue 3. The interface provides a distraction-free, monospace editing surface.
+Pure Editor is a minimalist text-editing web application built with Nuxt 4 and Vue 3. The interface provides a distraction-free, monospace editing surface. It is designed primarily as a self-hosted application, giving users full control over their data and environment.
 
 # Design Philosophy
 
-- **Minimalist aesthetic**: Clean, purposeful design with ample whitespace, subtle interactions, and focus on content over chrome
+- **Minimalist aesthetic**: Clean, purposeful design with ample whitespace, subtle interactions, and focus on content over chrome. The screen should only display what truly matters, eliminating unnecessary UI elements and distractions
 - **Mobile-first**: All interactions must work seamlessly on mobile devices with touch-friendly interfaces
 - **Spatial consistency**: New features should feel like natural extensions of existing workflows
 - **File-based storage**: All content is stored as markdown (.md) files in a configured workspace directory on the server, providing direct file system access and portability
@@ -18,6 +18,8 @@ Pure Editor is a minimalist text-editing web application built with Nuxt 4 and V
 - **Meta-Framework**: Nuxt 4 (SSR disabled, SPA mode, Nitro for backend)
 - **Framework**: Vue 3 with Composition API and TypeScript
 - **Styling**: TailwindCSS v4
+- **Editor**: CodeMirror 6
+- **Containerization**: Docker (for self-hosted deployment)
 
 ## Commands
 
