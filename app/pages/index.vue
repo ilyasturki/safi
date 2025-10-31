@@ -50,13 +50,20 @@ useKeyboardShortcut(
                 </p>
             </header>
 
-            <div
+            <!-- <div
                 class="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
             >
                 <ManagedExplorer v-model:folder-path="currentFolderPath" />
             </div>
 
-            <LastEditedFileCard />
+            <LastEditedFileCard /> -->
+
+            <button
+                type="button"
+                @click="isShortcutsOpen = true"
+            >
+                Show Shortcuts
+            </button>
         </main>
     </div>
 
