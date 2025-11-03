@@ -11,6 +11,6 @@
 
 @layer base {
     body {
-        @apply bg-white dark:bg-zinc-950;
+        @apply bg-white dark:bg-black;
     }
 }

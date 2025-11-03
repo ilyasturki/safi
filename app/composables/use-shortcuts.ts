@@ -6,7 +6,11 @@ export interface ShortcutOptions {
     shift?: boolean
 }
 
-type ShortcutAction = 'show-shortcuts' | 'open-explorer' | 'new-file'
+type ShortcutAction =
+    | 'show-shortcuts'
+    | 'open-explorer'
+    | 'new-file'
+    | 'toggle-focus-mode'
 export const shortcuts: Record<ShortcutAction, ShortcutOptions> = {
     'show-shortcuts': {
         description: 'Show keyboard shortcuts',
@@ -21,6 +25,12 @@ export const shortcuts: Record<ShortcutAction, ShortcutOptions> = {
         description: 'Create a new file',
         key: 'm',
         ctrl: true,
+    },
+    'toggle-focus-mode': {
+        description: 'Toggle focus mode',
+        key: 'd',
+        ctrl: true,
+        shift: true,
     },
 }
 

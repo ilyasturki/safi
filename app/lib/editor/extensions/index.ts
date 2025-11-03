@@ -9,50 +9,53 @@ import { noSpell } from './spellcheck'
 import { darkSelection, lightSelection } from './selection'
 import { usePreferredDark } from '@vueuse/core'
 import { darkTheme, lightTheme } from '~/lib/editor/theme/theme-extension'
+import type { MaybeRef } from 'vue'
+import { unref } from 'vue'
 
 export interface UseExtensionsOptions {
     /** @default undefined */
     placeholder?: string
     /** @default false */
-    enableLiveMarkers?: boolean
-    /** @default true */
-    enableFocusMode?: boolean
+    enableLiveMarkers?: MaybeRef<boolean>
+    /** @default false */
+    enableFocusMode?: MaybeRef<boolean>
 }
 
 export function useExtensions(options: UseExtensionsOptions = {}) {
     const {
         placeholder,
         enableLiveMarkers = false,
-        enableFocusMode = true,
+        enableFocusMode = false,
     } = options
-
-    const extensions = [
-        baseExtensions,
-        keymapsExtension,
-        markdownExtension,
-
-        // Extra
-        noSpell,
-        headingOutdentExtension,
-    ]
-
-    if (enableLiveMarkers) {
-        extensions.push(...liveMarkers)
-    }
-
-    if (enableFocusMode) {
-        extensions.push(...focusModeExtension)
-    }
-
-    if (placeholder) {
-        extensions.push(createPlaceholder(placeholder))
-    }
 
     const isDark = usePreferredDark()
 
-    return computed(() => [
-        ...extensions,
-        ...(isDark.value ? darkTheme : lightTheme),
-        ...(isDark.value ? darkSelection : lightSelection),
-    ])
+    return computed(() => {
+        const extensions = [
+            baseExtensions,
+            keymapsExtension,
+            markdownExtension,
+
+            noSpell,
+            headingOutdentExtension,
+        ]
+
+        if (unref(enableLiveMarkers)) {
+            extensions.push(...liveMarkers)
+        }
+
+        if (unref(enableFocusMode)) {
+            extensions.push(...focusModeExtension)
+        }
+
+        if (placeholder) {
+            extensions.push(createPlaceholder(placeholder))
+        }
+
+        return [
+            ...extensions,
+            ...(isDark.value ? darkTheme : lightTheme),
+            ...(isDark.value ? darkSelection : lightSelection),
+        ]
+    })
 }

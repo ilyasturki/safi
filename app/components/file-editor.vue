@@ -5,6 +5,7 @@ import ExplorerDialog from '~/components/explorer-dialog.vue'
 import { useShortcut } from '~/composables/use-shortcuts'
 import { useLastEditedFile } from '~/composables/use-last-edited-file'
 import type { FileResponse } from '~~/shared/types/api'
+import { usePreferencesState } from '~/composables/use-preferences-state'
 
 const props = defineProps<{
     file: FileResponse
@@ -35,8 +36,12 @@ watchDebounced(
 
 const isExplorerOpen = ref(false)
 
+const { enableFocusMode } = usePreferencesState()
 useShortcut('open-explorer', () => {
     isExplorerOpen.value = true
+})
+useShortcut('toggle-focus-mode', () => {
+    enableFocusMode.value = !enableFocusMode.value
 })
 
 const currentDirectory = computed(() => {
@@ -52,6 +57,7 @@ const currentDirectory = computed(() => {
         <Editor
             v-model:content="content"
             placeholder="Start typing your markdown..."
+            :enable-focus-mode
             class="w-full max-w-[70ch]"
         />
     </div>

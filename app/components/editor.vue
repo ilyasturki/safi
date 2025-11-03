@@ -5,6 +5,7 @@ import { useCodeMirror } from '~/composables/use-code-mirror'
 
 interface EditorProps {
     placeholder?: string
+    enableFocusMode?: boolean
     class?: HTMLAttributes['class']
 }
 
@@ -25,6 +26,7 @@ const {
     updateContent,
 } = useCodeMirror(content, editorEl, {
     placeholder: props.placeholder,
+    enableFocusMode: toRef(() => props.enableFocusMode),
 })
 
 defineExpose({
