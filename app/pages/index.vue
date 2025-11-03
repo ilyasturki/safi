@@ -56,8 +56,13 @@ useShortcut('new-file', startCreating)
     <div class="flex flex-col items-center px-4 py-12 font-mono">
         <header class="mb-12 text-center">
             <h1
-                class="mb-3 text-4xl font-medium tracking-tight text-zinc-900 sm:text-5xl dark:text-zinc-100"
+                class="mb-3 flex flex-col items-center gap-4 text-4xl font-medium tracking-tight text-zinc-900 sm:text-5xl dark:text-zinc-100"
             >
+                <img
+                    src="/favicon.svg"
+                    alt="Safi logo"
+                    class="h-14 w-14 rounded-lg bg-zinc-200 p-2 shadow-sm sm:h-16 sm:w-16"
+                />
                 Safi
             </h1>
             <!-- <p class="text-sm text-zinc-600 sm:text-base dark:text-zinc-400">
