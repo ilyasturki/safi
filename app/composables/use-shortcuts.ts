@@ -19,6 +19,12 @@ export const shortcuts: ShortcutOptions[] = [
         key: 'k',
         ctrl: true,
     },
+    {
+        action: 'new-file',
+        description: 'Create a new file',
+        key: 'm',
+        ctrl: true,
+    },
 ]
 export function useShortcut(
     action: ShortcutOptions['action'],

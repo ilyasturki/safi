@@ -7,7 +7,7 @@ defineProps<KeyboardKeyProps>()
 </script>
 
 <template>
-    <div class="flex items-center gap-1">
+    <span class="inline-flex items-center gap-1">
         <kbd
             v-for="(key, keyIndex) in keys"
             :key="keyIndex"
@@ -15,5 +15,5 @@ defineProps<KeyboardKeyProps>()
         >
             {{ key }}
         </kbd>
-    </div>
+    </span>
 </template>

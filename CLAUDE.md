@@ -25,6 +25,7 @@ Safi is a minimalist text-editing web application built with Nuxt 4 and Vue 3. T
 
 - `bun run typecheck` - Type checking with vue-tsc
 - `bun run format` - Prettier formatting
+- `bun run lint` - ESLint
 - Never use `bun run dev`
 
 ## Key Links
