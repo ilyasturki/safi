@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ExplorerDialog from '~/components/explorer-dialog.vue'
 import HomeButton from '~/components/home-button.vue'
 import InputValidation from '~/components/input-validation.vue'
 import KeyboardKey from '~/components/keyboard-key.vue'
@@ -13,6 +14,7 @@ import { getKeyDisplay } from '~/utils/key-display'
 // const workspacePath = computed(() => workspace.value?.path ?? '')
 
 const isShortcutsOpen = useState('isShortcutsOpen', () => false)
+const isExplorerOpen = ref(false)
 
 const isCreatingFile = ref(false)
 const newFileName = ref('')
@@ -51,6 +53,7 @@ async function createFile() {
 }
 
 useShortcut('new-file', startCreating)
+useShortcut('open-explorer', () => (isExplorerOpen.value = true))
 </script>
 
 <template>
@@ -81,6 +84,13 @@ useShortcut('new-file', startCreating)
             <LastEditedFileCard /> -->
 
         <main class="flex w-full max-w-md flex-col items-center gap-4">
+            <HomeButton @click="isExplorerOpen = true">
+                Open Explorer
+                <KeyboardKey
+                    :keys="getKeyDisplay(shortcuts['open-explorer'])"
+                />
+            </HomeButton>
+
             <InputValidation
                 v-if="isCreatingFile"
                 ref="createFileContainer"
@@ -90,6 +100,7 @@ useShortcut('new-file', startCreating)
                 @validate="createFile"
                 @cancel="cancelCreating"
             />
+
             <HomeButton
                 v-else
                 @click="startCreating"
@@ -106,4 +117,6 @@ useShortcut('new-file', startCreating)
             </HomeButton>
         </main>
     </div>
+
+    <ExplorerDialog v-model:open="isExplorerOpen" />
 </template>
