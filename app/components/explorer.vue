@@ -4,7 +4,7 @@ import type {
     FolderMetadata,
     FolderResponse,
 } from '~~/shared/types/api'
-import ExplorerButton from './explorer-button.vue'
+import ExplorerItem from './explorer-item.vue'
 import FileContextMenu from './file-context-menu.vue'
 import RenameDialog from './rename-dialog.vue'
 
@@ -35,6 +35,34 @@ const parentPath = computed(() => {
 })
 
 const hasParent = computed(() => parentPath.value !== undefined)
+
+const listContainerRef = useTemplateRef('listContainer')
+
+function handleKeyDown(event: KeyboardEvent) {
+    if (!listContainerRef.value) return
+
+    const items = [
+        ...listContainerRef.value.querySelectorAll<HTMLElement>(
+            '[tabindex="0"]',
+        ),
+    ]
+    if (items.length === 0) return
+
+    const { activeElement } = document
+    const currentIndex =
+        activeElement ? items.indexOf(activeElement as HTMLElement) : -1
+
+    if (event.key === 'ArrowDown') {
+        event.preventDefault()
+        const nextIndex = (currentIndex + 1) % items.length
+        items[nextIndex]?.focus()
+    } else if (event.key === 'ArrowUp') {
+        event.preventDefault()
+        const prevIndex =
+            currentIndex <= 0 ? items.length - 1 : currentIndex - 1
+        items[prevIndex]?.focus()
+    }
+}
 
 const selectedItem = ref<FileMetadata | FolderMetadata | undefined>(undefined)
 const selectedItemType = ref<'file' | 'folder' | undefined>(undefined)
@@ -105,13 +133,6 @@ function handleTouchEnd() {
     }
 }
 
-function handleClick(_event: MouseEvent, callback: () => void) {
-    if (contextMenuOpen.value) {
-        return
-    }
-    callback()
-}
-
 function handleRename() {
     renameDialogOpen.value = true
 }
@@ -147,64 +168,72 @@ async function confirmRename(newName: string) {
 </script>
 
 <template>
-    <div class="flex flex-col font-mono">
-        <div class="divide-y divide-zinc-200 dark:divide-zinc-800">
-            <ExplorerButton
-                v-if="hasParent"
-                @click="
-                    parentPath !== undefined && emit('folderClick', parentPath)
-                "
-            >
-                go back
-            </ExplorerButton>
+    <ul
+        ref="listContainer"
+        class="flex flex-col divide-y divide-zinc-200 font-mono dark:divide-zinc-800"
+    >
+        <ExplorerItem
+            v-if="hasParent"
+            tabindex="0"
+            @dblclick="
+                parentPath !== undefined && emit('folderClick', parentPath)
+            "
+            @keydown.enter.prevent="
+                parentPath !== undefined && emit('folderClick', parentPath)
+            "
+            @keydown="handleKeyDown"
+        >
+            go back
+        </ExplorerItem>
 
-            <ExplorerButton
-                v-for="directory in sortedDirectories"
-                :key="directory.path"
-                icon="📁"
-                @click="
-                    handleClick($event, () =>
-                        emit('folderClick', directory.path),
-                    )
-                "
-                @contextmenu="handleContextMenu($event, directory, 'folder')"
-                @touchstart="handleTouchStart($event, directory, 'folder')"
-                @touchmove="handleTouchMove"
-                @touchend="handleTouchEnd"
-                @touchcancel="handleTouchEnd"
-            >
-                {{ directory.name }}
-            </ExplorerButton>
+        <ExplorerItem
+            v-for="directory in sortedDirectories"
+            :key="directory.path"
+            tabindex="0"
+            icon="📁"
+            @dblclick="emit('folderClick', directory.path)"
+            @keydown.enter.prevent="emit('folderClick', directory.path)"
+            @contextmenu="handleContextMenu($event, directory, 'folder')"
+            @touchstart="handleTouchStart($event, directory, 'folder')"
+            @touchmove="handleTouchMove"
+            @touchend="handleTouchEnd"
+            @touchcancel="handleTouchEnd"
+            @keydown="handleKeyDown"
+        >
+            {{ directory.name }}
+        </ExplorerItem>
 
-            <ExplorerButton
-                v-for="file in sortedFiles"
-                :key="file.path"
-                icon="📄"
-                @click="handleClick($event, () => emit('fileClick', file.path))"
-                @contextmenu="handleContextMenu($event, file, 'file')"
-                @touchstart="handleTouchStart($event, file, 'file')"
-                @touchmove="handleTouchMove"
-                @touchend="handleTouchEnd"
-                @touchcancel="handleTouchEnd"
-            >
-                {{ file.name }}
-            </ExplorerButton>
-        </div>
+        <ExplorerItem
+            v-for="file in sortedFiles"
+            :key="file.path"
+            tabindex="0"
+            icon="📄"
+            @dblclick="emit('fileClick', file.path)"
+            @keydown.enter.prevent="emit('fileClick', file.path)"
+            @contextmenu="handleContextMenu($event, file, 'file')"
+            @touchstart="handleTouchStart($event, file, 'file')"
+            @touchmove="handleTouchMove"
+            @touchend="handleTouchEnd"
+            @touchcancel="handleTouchEnd"
+            @keydown="handleKeyDown"
+        >
+            {{ file.name }}
+        </ExplorerItem>
+    </ul>
 
-        <FileContextMenu
-            v-model:open="contextMenuOpen"
-            :x="contextMenuX"
-            :y="contextMenuY"
-            @rename="handleRename"
-            @delete="handleDelete"
-        />
+    <FileContextMenu
+        v-model:open="contextMenuOpen"
+        :x="contextMenuX"
+        :y="contextMenuY"
+        @rename="handleRename"
+        @delete="handleDelete"
+    />
 
-        <RenameDialog
-            v-if="selectedItem"
-            v-model:open="renameDialogOpen"
-            :current-name="selectedItem.name"
-            :item-type="selectedItemType!"
-            @confirm="confirmRename"
-        />
-    </div>
+    <RenameDialog
+        v-if="selectedItem"
+        v-model:open="renameDialogOpen"
+        :current-name="selectedItem.name"
+        :item-type="selectedItemType!"
+        @confirm="confirmRename"
+    />
 </template>
