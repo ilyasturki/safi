@@ -11,6 +11,7 @@ type ShortcutAction =
     | 'open-explorer'
     | 'new-file'
     | 'toggle-focus-mode'
+    | 'open-file-search'
 export const shortcuts: Record<ShortcutAction, ShortcutOptions> = {
     'show-shortcuts': {
         description: 'Show keyboard shortcuts',
@@ -19,6 +20,11 @@ export const shortcuts: Record<ShortcutAction, ShortcutOptions> = {
     'open-explorer': {
         description: 'Open file explorer',
         key: 'k',
+        ctrl: true,
+    },
+    'open-file-search': {
+        description: 'Search Files',
+        key: 'e',
         ctrl: true,
     },
     'new-file': {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import ShortcutsDialog from '~/components/shortcuts-dialog.vue'
+import FileSearchDialog from '~/components/file-search-dialog.vue'
 import { useShortcut } from '~/composables/use-shortcuts'
 
 useHead({
@@ -19,9 +20,14 @@ useHead({
 })
 
 const isShortcutsOpen = useState('isShortcutsOpen', () => false)
+const isFileSearchOpen = useState('isFileSearchOpen', () => false)
 
 useShortcut('show-shortcuts', () => {
     isShortcutsOpen.value = !isShortcutsOpen.value
+})
+
+useShortcut('open-file-search', () => {
+    isFileSearchOpen.value = !isFileSearchOpen.value
 })
 </script>
 
@@ -31,4 +37,5 @@ useShortcut('show-shortcuts', () => {
     </NuxtLayout>
 
     <ShortcutsDialog v-model:open="isShortcutsOpen" />
+    <FileSearchDialog v-model:open="isFileSearchOpen" />
 </template>

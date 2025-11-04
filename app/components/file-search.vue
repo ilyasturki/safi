@@ -13,12 +13,11 @@ const filteredFiles = computed(() => {
     return files.value.filter((file) => file.path.toLowerCase().includes(query))
 })
 
-const MAX_FILES = 20
+// const MAX_FILES = 20
 
-const sortedFiles = computed(() =>
-    filteredFiles.value
-        .toSorted((a, b) => a.path.localeCompare(b.path))
-        .slice(0, MAX_FILES),
+const sortedFiles = computed(
+    () => filteredFiles.value.toSorted((a, b) => a.path.localeCompare(b.path)),
+    // .slice(0, MAX_FILES),
 )
 
 const isLoading = computed(() => status.value === 'pending')
