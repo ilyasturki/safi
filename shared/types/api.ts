@@ -20,6 +20,7 @@ export interface FileRequest {
 export interface FileMetadata {
     name: string
     path: string
+    mtime: number
 }
 
 export interface FolderMetadata {

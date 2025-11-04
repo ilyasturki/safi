@@ -13,15 +13,8 @@ const filteredFiles = computed(() => {
     return files.value.filter((file) => file.path.toLowerCase().includes(query))
 })
 
-// const MAX_FILES = 20
-
-const sortedFiles = computed(
-    () => filteredFiles.value.toSorted((a, b) => a.path.localeCompare(b.path)),
-    // .slice(0, MAX_FILES),
-)
-
 const isLoading = computed(() => status.value === 'pending')
-const isEmpty = computed(() => sortedFiles.value.length === 0)
+const isEmpty = computed(() => filteredFiles.value.length === 0)
 </script>
 
 <template>
@@ -62,7 +55,7 @@ const isEmpty = computed(() => sortedFiles.value.length === 0)
         >
             <div class="divide-y divide-zinc-200 dark:divide-zinc-800">
                 <NuxtLink
-                    v-for="file in sortedFiles"
+                    v-for="file in filteredFiles"
                     :key="file.path"
                     :to="`/edit/${file.path}`"
                     class="flex w-full flex-col gap-1 px-5 py-3 transition-colors hover:bg-zinc-50 active:bg-zinc-100 dark:hover:bg-zinc-900 dark:active:bg-zinc-800"

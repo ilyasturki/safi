@@ -1,5 +1,5 @@
 import { constants } from 'node:fs'
-import { access, mkdir, readdir } from 'node:fs/promises'
+import { access, mkdir, readdir, stat } from 'node:fs/promises'
 import path from 'node:path'
 import type { H3Event } from 'h3'
 import type { FileMetadata, FolderMetadata } from '~~/shared/types/api'
@@ -74,6 +74,7 @@ export function isHiddenFile(filename: string): boolean {
 export function getFileMetadata(
     absolutePath: string,
     relativePath: string,
+    mtime: number,
 ): FileMetadata {
     const filename = path.basename(absolutePath)
     const nameWithoutExtension = filename.replace(/\.md$/iu, '')
@@ -82,6 +83,7 @@ export function getFileMetadata(
     return {
         name: nameWithoutExtension,
         path: pathWithoutExtension,
+        mtime,
     }
 }
 
@@ -119,7 +121,14 @@ export async function listDirectory(
                 path: entryRelativePath,
             })
         } else if (entry.isFile() && isMarkdownFile(entry.name)) {
-            files.push(getFileMetadata(entryAbsolutePath, entryRelativePath))
+            const stats = await stat(entryAbsolutePath)
+            files.push(
+                getFileMetadata(
+                    entryAbsolutePath,
+                    entryRelativePath,
+                    stats.mtime.getTime(),
+                ),
+            )
         }
     }
 
@@ -156,9 +165,18 @@ export async function listAllFilesRecursive(
             const subFiles = await listAllFilesRecursive(entryRelativePath)
             allFiles.push(...subFiles)
         } else if (entry.isFile() && isMarkdownFile(entry.name)) {
-            allFiles.push(getFileMetadata(entryAbsolutePath, entryRelativePath))
+            const stats = await stat(entryAbsolutePath)
+            allFiles.push(
+                getFileMetadata(
+                    entryAbsolutePath,
+                    entryRelativePath,
+                    stats.mtime.getTime(),
+                ),
+            )
         }
     }
+
+    allFiles.sort((a, b) => b.mtime - a.mtime)
 
     return allFiles
 }
