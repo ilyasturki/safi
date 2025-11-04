@@ -7,6 +7,7 @@ import type {
 import ExplorerItem from './explorer-item.vue'
 import FileContextMenu from './file-context-menu.vue'
 import RenameDialog from './rename-dialog.vue'
+import CreateItemDialog from './create-item-dialog.vue'
 
 interface FileExplorerProps {
     folder: FolderResponse
@@ -17,6 +18,7 @@ const emit = defineEmits<{
     folderClick: [path: string]
     fileClick: [path: string]
     refresh: []
+    createItem: [type: 'file' | 'folder', name: string]
 }>()
 
 const sortedDirectories = computed(() =>
@@ -68,6 +70,8 @@ const contextMenuOpen = ref(false)
 const contextMenuX = ref(0)
 const contextMenuY = ref(0)
 const renameDialogOpen = ref(false)
+const createDialogOpen = ref(false)
+const createItemType = ref<'file' | 'folder' | undefined>(undefined)
 
 let touchTimer: NodeJS.Timeout | undefined
 let touchStartX = 0
@@ -163,6 +167,21 @@ async function confirmRename(newName: string) {
 
     emit('refresh')
 }
+
+function handleCreateFile() {
+    createItemType.value = 'file'
+    createDialogOpen.value = true
+}
+
+function handleCreateFolder() {
+    createItemType.value = 'folder'
+    createDialogOpen.value = true
+}
+
+function confirmCreate(name: string) {
+    if (!createItemType.value) return
+    emit('createItem', createItemType.value, name)
+}
 </script>
 
 <template>
@@ -210,6 +229,22 @@ async function confirmRename(newName: string) {
         >
             {{ file.name }}
         </ExplorerItem>
+
+        <ExplorerItem
+            @dblclick="handleCreateFile"
+            @keydown.enter.prevent="handleCreateFile"
+            @keydown="handleKeyDown"
+        >
+            create new file
+        </ExplorerItem>
+
+        <ExplorerItem
+            @dblclick="handleCreateFolder"
+            @keydown.enter.prevent="handleCreateFolder"
+            @keydown="handleKeyDown"
+        >
+            create new folder
+        </ExplorerItem>
     </ul>
 
     <FileContextMenu
@@ -226,5 +261,12 @@ async function confirmRename(newName: string) {
         :current-name="selectedItem.name"
         :item-type="selectedItemType!"
         @confirm="confirmRename"
+    />
+
+    <CreateItemDialog
+        v-if="createItemType"
+        v-model:open="createDialogOpen"
+        :item-type="createItemType"
+        @confirm="confirmCreate"
     />
 </template>

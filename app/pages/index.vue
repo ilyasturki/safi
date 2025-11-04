@@ -101,7 +101,6 @@ useShortcut('open-explorer', () => (isExplorerOpen.value = true))
                 @validate="createFile"
                 @cancel="cancelCreating"
             />
-
             <HomeButton
                 v-else
                 @click="startCreating"
