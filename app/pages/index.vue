@@ -5,6 +5,7 @@ import InputValidation from '~/components/input-validation.vue'
 import KeyboardKey from '~/components/keyboard-key.vue'
 import { shortcuts, useShortcut } from '~/composables/use-shortcuts'
 import { getKeyDisplay } from '~/utils/key-display'
+import { navigateToEdit } from '~/utils/navigate-to-edit'
 // import LastEditedFileCard from '~/components/last-edited-file-card.vue'
 // import ManagedExplorer from '~/components/managed-explorer.vue'
 
@@ -49,7 +50,7 @@ async function createFile() {
 
     cancelCreating()
 
-    await navigateTo(`/edit/${fileName}`)
+    await navigateToEdit(fileName)
 }
 
 useShortcut('new-file', startCreating)

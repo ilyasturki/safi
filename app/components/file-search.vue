@@ -27,7 +27,6 @@ const isEmpty = computed(() => sortedFiles.value.length === 0)
 
 <template>
     <div class="flex h-full w-full flex-col font-mono">
-        <!-- Search Input -->
         <div class="border-b border-zinc-200 p-4 dark:border-zinc-800">
             <label
                 for="file-search"

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useLastEditedFile } from '~/composables/use-last-edited-file'
 import type { FileResponse } from '~~/shared/types/api'
+import { navigateToEdit } from '~/utils/navigate-to-edit'
 
 const { lastEditedFilePath } = useLastEditedFile()
 const { data: lastEditedFile } = await useFetch<FileResponse>(
@@ -26,7 +27,7 @@ const fileName = computed(() => {
 
 function navigateToFile() {
     if (lastEditedFilePath.value !== undefined) {
-        navigateTo(`/edit/${lastEditedFilePath.value}`)
+        navigateToEdit(lastEditedFilePath.value)
     }
 }
 </script>

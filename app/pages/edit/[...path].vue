@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Explorer from '~/components/explorer.vue'
 import FileEditor from '~/components/file-editor.vue'
+import { navigateToEdit } from '~/utils/navigate-to-edit'
 
 const route = useRoute()
 const entryPath = computed(() => {
@@ -14,10 +15,10 @@ const { data: entry, refresh } = await useFetch(
 )
 
 function handleFolderClick(path: string) {
-    navigateTo(`/edit/${path}`)
+    navigateToEdit(path)
 }
 function handleFileClick(path: string) {
-    navigateTo(`/edit/${path}`)
+    navigateToEdit(path)
 }
 </script>
 

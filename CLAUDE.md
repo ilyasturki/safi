@@ -62,4 +62,4 @@ Safi is a minimalist text-editing web application built with Nuxt 4 and Vue 3. T
 - Use `undefined` over `null` for optional values
 - Follow Vue 3 Composition API patterns consistently
 - Never use the `any` type in TypeScript - use proper typing instead
-- Keep comments minimal and purposeful - only add comments when they clarify complex business logic, explain non-obvious decisions, or provide essential context that cannot be expressed through clear code
+- Don't add comments unless extremely necessary

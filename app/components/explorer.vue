@@ -34,8 +34,6 @@ const parentPath = computed(() => {
     return segments.length === 0 ? '' : `/${segments.join('/')}`
 })
 
-const hasParent = computed(() => parentPath.value !== undefined)
-
 const listContainerRef = useTemplateRef('listContainer')
 
 function handleKeyDown(event: KeyboardEvent) {
@@ -170,26 +168,20 @@ async function confirmRename(newName: string) {
 <template>
     <ul
         ref="listContainer"
-        class="flex flex-col divide-y divide-zinc-200 font-mono dark:divide-zinc-800"
+        class="flex flex-col divide-y divide-zinc-200 font-mono text-white dark:divide-zinc-800"
     >
         <ExplorerItem
-            v-if="hasParent"
-            tabindex="0"
-            @dblclick="
-                parentPath !== undefined && emit('folderClick', parentPath)
-            "
-            @keydown.enter.prevent="
-                parentPath !== undefined && emit('folderClick', parentPath)
-            "
+            v-if="parentPath !== undefined"
+            @dblclick="emit('folderClick', parentPath)"
+            @keydown.enter.prevent="emit('folderClick', parentPath)"
             @keydown="handleKeyDown"
         >
-            go back
+            go to parent folder
         </ExplorerItem>
 
         <ExplorerItem
             v-for="directory in sortedDirectories"
             :key="directory.path"
-            tabindex="0"
             icon="📁"
             @dblclick="emit('folderClick', directory.path)"
             @keydown.enter.prevent="emit('folderClick', directory.path)"
@@ -206,7 +198,6 @@ async function confirmRename(newName: string) {
         <ExplorerItem
             v-for="file in sortedFiles"
             :key="file.path"
-            tabindex="0"
             icon="📄"
             @dblclick="emit('fileClick', file.path)"
             @keydown.enter.prevent="emit('fileClick', file.path)"

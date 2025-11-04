@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Explorer from '~/components/explorer.vue'
 import type { FolderResponse } from '~~/shared/types/api'
+import { navigateToEdit } from '~/utils/navigate-to-edit'
 
 const currentFolderPath = defineModel<string>('folder-path', { default: '' })
 
@@ -16,7 +17,7 @@ function handleFolderClick(path: string) {
 }
 
 function handleFileClick(path: string) {
-    navigateTo(`/edit/${path}`)
+    navigateToEdit(path)
 }
 
 function handleRefresh() {
