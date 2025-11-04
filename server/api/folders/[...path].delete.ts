@@ -1,9 +1,9 @@
 import { rm } from 'node:fs/promises'
-import { resolvePath, isWithinWorkspace } from '~~/server/utils/workspace'
+import { resolvePath, isWithinWorkspace, decodeRouterParam } from '~~/server/utils/workspace'
 
 export default defineEventHandler(async (event) => {
     try {
-        const path = getRouterParam(event, 'path')
+        const path = decodeRouterParam(event, 'path')
 
         if (!path) {
             throw createError({

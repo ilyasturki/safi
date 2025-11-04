@@ -5,11 +5,12 @@ import {
     isWithinWorkspace,
     validateNewPath,
     getWorkspacePath,
+    decodeRouterParam,
 } from '~~/server/utils/workspace'
 
 export default defineEventHandler(async (event) => {
     try {
-        const filePath = getRouterParam(event, 'path')
+        const filePath = decodeRouterParam(event, 'path')
 
         if (!filePath) {
             throw createError({
