@@ -1,7 +1,9 @@
 {
     "name": "safi",
+    "description": "A minimalist, self hosted text editor for markdown files. Safi provides a clean, mobile-friendly interface focused on your content.",
     "type": "module",
     "private": true,
+    "license": "MIT",
     "scripts": {
         "prepare": "nuxt prepare",
         "dev": "nuxt dev",
@@ -31,6 +33,7 @@
         "@fontsource/ibm-plex-mono": "^5.2.7",
         "@lezer/highlight": "^1.2.2",
         "@lezer/markdown": "^1.5.1",
+        "@nuxt/icon": "2.1.0",
         "@tailwindcss/vite": "^4.1.15",
         "@vueuse/core": "^14.0.0",
         "h3": "^1.15.4",
