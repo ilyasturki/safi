@@ -1,9 +1,6 @@
 services:
     safi:
-        build:
-            context: .
-            dockerfile: Dockerfile
-        image: safi:latest
+        image: ghcr.io/yasso9/safi:latest
         container_name: safi
         restart: unless-stopped
         ports:

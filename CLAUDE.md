@@ -19,6 +19,7 @@ Safi is a minimalist text-editing web application built with Nuxt 4 and Vue 3. T
 - **Framework**: Vue 3 with Composition API and TypeScript
 - **Styling**: TailwindCSS v4
 - **Editor**: CodeMirror 6
+- **Icons**: Lucide icons
 - **Containerization**: Docker (for self-hosted deployment)
 
 ## Commands
@@ -30,6 +31,7 @@ Safi is a minimalist text-editing web application built with Nuxt 4 and Vue 3. T
 
 ## Key Links
 
+- **Repository**: `https://github.com/Yasso9/safi`
 - **Vue.js**: `https://vuejs.org/`
 - **Nuxt 4**: `https://nuxt.com/docs/4.x`
 - **Tailwind CSS**: `https://tailwindcss.com/`

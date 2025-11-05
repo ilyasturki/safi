@@ -12,37 +12,55 @@ A minimalist, self-hosted text editor for markdown files with a clean, mobile-fr
 
 ## Quick Start with Docker
 
-The easiest way to run Safi is using Docker:
+The easiest way to run Safi is using the pre-built Docker image from GitHub Container Registry:
 
-### Using Docker Compose (Recommended)
+### Using Pre-built Image (Recommended)
 
-1. Clone the repository:
 ```bash
-git clone <repository-url>
-cd safi
+docker run -d \
+  --name safi \
+  -p 3000:3000 \
+  -v $(pwd)/workspace:/app/workspace \
+  ghcr.io/yasso9/safi:latest
 ```
 
-2. Create a directory for your markdown files:
-```bash
-mkdir workspace
+Open your browser and navigate to `http://localhost:3000`
+
+### Using Docker Compose
+
+Create a `docker-compose.yml` file:
+
+```yaml
+version: '3.8'
+
+services:
+  safi:
+    image: ghcr.io/yasso9/safi:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./workspace:/app/workspace
+    restart: unless-stopped
 ```
 
-3. Start the application:
+Then run:
 ```bash
 docker-compose up -d
 ```
 
-4. Open your browser and navigate to `http://localhost:3000`
+### Building from Source
 
-Your markdown files will be stored in the `./workspace` directory.
+If you prefer to build the image yourself:
 
-### Using Docker Run
-
+1. Clone the repository:
 ```bash
-# Build the image
-docker build -t safi .
+git clone https://github.com/Yasso9/safi.git
+cd safi
+```
 
-# Run the container
+2. Build and run:
+```bash
+docker build -t safi .
 docker run -d \
   --name safi \
   -p 3000:3000 \
@@ -183,7 +201,7 @@ bun run lint
 
 ## License
 
-[Add your license here]
+MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
