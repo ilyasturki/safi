@@ -1,5 +1,5 @@
 export function useKeyboardListNavigation(
-    containerRef: Ref<HTMLElement | undefined>,
+    containerRef: Ref<HTMLElement | null>,
     selector = '[tabindex="0"]',
 ) {
     function handleKeyDown(event: KeyboardEvent) {
