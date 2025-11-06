@@ -96,7 +96,10 @@ export async function listDirectory(
     try {
         await access(absolutePath, constants.R_OK)
     } catch {
-        await mkdir(absolutePath, { recursive: true })
+        throw createError({
+            statusCode: 404,
+            statusMessage: 'Directory not found or not readable',
+        })
     }
 
     const entries = await readdir(absolutePath, { withFileTypes: true })
@@ -145,7 +148,10 @@ export async function listAllFilesRecursive(
     try {
         await access(absolutePath, constants.R_OK)
     } catch {
-        await mkdir(absolutePath, { recursive: true })
+        throw createError({
+            statusCode: 404,
+            statusMessage: 'Directory not found or not readable',
+        })
     }
 
     const entries = await readdir(absolutePath, { withFileTypes: true })
