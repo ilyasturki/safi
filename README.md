@@ -29,7 +29,6 @@ docker run -d \
 ### Docker Compose
 
 ```yaml
-version: '3.8'
 services:
     safi:
         image: ghcr.io/yasso9/safi:latest

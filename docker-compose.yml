@@ -1,15 +1,12 @@
 services:
     safi:
         image: ghcr.io/yasso9/safi:latest
-        container_name: safi
         restart: unless-stopped
         ports:
             - '3000:3000'
         environment:
             # Workspace path inside container
             - NUXT_WORKSPACE_PATH=/app/workspace
-            # Production mode
-            - NODE_ENV=production
             # Server configuration
             - HOST=0.0.0.0
             - PORT=3000
