@@ -1,10 +1,17 @@
 <script setup lang="ts">
 import type { FileMetadata } from '~~/shared/types/api'
+import { Icon } from '#components'
+import { HTTP_STATUS } from '~~/shared/utils/http-status'
 
 const searchQuery = ref('')
 const searchInputRef = useTemplateRef('searchInputRef')
 
-const { data: files, status } = await useFetch<FileMetadata[]>('/api/files')
+const {
+    data: files,
+    status,
+    error,
+    refresh,
+} = await useFetch<FileMetadata[]>('/api/files')
 
 const filteredFiles = computed(() => {
     if (!files.value) return []
@@ -15,7 +22,26 @@ const filteredFiles = computed(() => {
 })
 
 const isLoading = computed(() => status.value === 'pending')
+const isError = computed(() => status.value === 'error')
 const isEmpty = computed(() => filteredFiles.value.length === 0)
+
+const errorMessage = computed(() => {
+    if (!error.value) return
+
+    const { statusCode, statusMessage } = error.value
+
+    if (
+        statusCode === HTTP_STATUS.INTERNAL_SERVER_ERROR
+        && statusMessage?.includes('NUXT_WORKSPACE_PATH')
+    ) {
+        return 'Workspace not configured'
+    }
+    if (statusCode === HTTP_STATUS.FORBIDDEN) {
+        return 'Unable to access workspace'
+    }
+
+    return statusMessage || 'Failed to load files'
+})
 
 function handleSearchKeyDown(event: KeyboardEvent) {
     const links = document.querySelectorAll<HTMLElement>('[data-result-link]')
@@ -81,6 +107,29 @@ function handleResultKeyDown(event: KeyboardEvent) {
             class="flex flex-1 items-center justify-center p-8 text-sm text-zinc-600 dark:text-zinc-400"
         >
             Loading files...
+        </div>
+
+        <div
+            v-else-if="isError"
+            class="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-zinc-600 dark:text-zinc-400"
+        >
+            <Icon
+                name="lucide:alert-circle"
+                class="text-2xl"
+            />
+            <div class="text-center text-sm">
+                <div class="font-medium text-zinc-900 dark:text-zinc-100">
+                    {{ errorMessage }}
+                </div>
+                <div class="mt-1">Unable to load files</div>
+            </div>
+            <button
+                type="button"
+                class="mt-2 rounded-sm border border-zinc-200 bg-white px-4 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-50 focus:border-zinc-400 focus:outline-none active:bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:focus:border-zinc-600 dark:active:bg-zinc-700"
+                @click="refresh()"
+            >
+                Try again
+            </button>
         </div>
 
         <div
