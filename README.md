@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="public/favicon.svg" alt="Safi Logo" width="180">
+</p>
+
 # Safi
 
 A minimalist, self-hosted text editor for markdown files with a clean, mobile-friendly interface and file-based storage.
