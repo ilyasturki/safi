@@ -18,15 +18,15 @@ FROM oven/bun:1 AS production
 WORKDIR /app
 
 # Create non-root user for security
-RUN groupadd -r pureapp && useradd -r -g pureapp pureapp
+RUN groupadd -r safi && useradd -r -g safi safi
 
 # Only `.output` folder is needed from the build stage
 COPY --from=build /app/.output /app
 
 # Create workspace directory with proper permissions
-RUN mkdir -p /app/workspace && chown -R pureapp:pureapp /app
+RUN mkdir -p /app/workspace && chown -R safi:safi /app
 # Switch to non-root user
-USER pureapp
+USER safi
 
 ENV NUXT_WORKSPACE_PATH=/app/workspace
 
