@@ -1,5 +1,5 @@
-import { listDirectory } from '~~/server/utils/workspace'
 import type { FolderResponse } from '~~/shared/types/api'
+import { listDirectory } from '~~/server/utils/workspace'
 
 export default defineEventHandler(async (): Promise<FolderResponse> => {
     const path = ''

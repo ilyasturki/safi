@@ -1,11 +1,12 @@
 import { rename } from 'node:fs/promises'
 import path from 'node:path'
+
+import { generateUniqueName } from '~~/server/utils/file-operations'
 import {
     getWorkspacePath,
     isWithinWorkspace,
     resolvePath,
 } from '~~/server/utils/workspace'
-import { generateUniqueName } from '~~/server/utils/file-operations'
 
 export default defineEventHandler(async (event) => {
     try {

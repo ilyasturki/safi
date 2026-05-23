@@ -1,11 +1,12 @@
 import { writeFile } from 'node:fs/promises'
+
+import type { FileRequest } from '~~/shared/types/api'
 import {
     decodeRouterParam,
     ensureDirectoryExists,
     resolveFilePath,
     validateNewPath,
 } from '~~/server/utils/workspace'
-import type { FileRequest } from '~~/shared/types/api'
 
 export default defineEventHandler(async (event) => {
     try {

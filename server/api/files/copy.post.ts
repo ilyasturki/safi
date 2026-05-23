@@ -1,14 +1,15 @@
 import path from 'node:path'
+
+import {
+    copyFileWithContent,
+    generateUniqueName,
+} from '~~/server/utils/file-operations'
 import {
     ensureDirectoryExists,
     getWorkspacePath,
     isWithinWorkspace,
     resolveFilePath,
 } from '~~/server/utils/workspace'
-import {
-    copyFileWithContent,
-    generateUniqueName,
-} from '~~/server/utils/file-operations'
 
 export default defineEventHandler(async (event) => {
     try {

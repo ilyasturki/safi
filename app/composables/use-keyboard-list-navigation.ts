@@ -12,8 +12,8 @@ export function useKeyboardListNavigation(
 
         const { activeElement } = document
         const currentIndex =
-            activeElement ?
-                items.indexOf(activeElement as HTMLElement)
+            activeElement instanceof HTMLElement ?
+                items.indexOf(activeElement)
             :   undefined
 
         if (event.key === 'ArrowDown') {

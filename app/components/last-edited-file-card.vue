@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { useLastEditedFile } from '~/composables/use-last-edited-file'
 import type { FileResponse } from '~~/shared/types/api'
+import { useLastEditedFile } from '~/composables/use-last-edited-file'
 import { navigateToEdit } from '~/utils/navigate-to-edit'
 
 const { lastEditedFilePath } = useLastEditedFile()

@@ -1,8 +1,8 @@
 import { Compartment, EditorState } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
 
-import { useExtensions } from '~/lib/editor/extensions'
 import type { UseExtensionsOptions } from '~/lib/editor/extensions'
+import { useExtensions } from '~/lib/editor/extensions'
 import { createLogger, LogLevels } from '~/utils/create-logger'
 
 const logger = createLogger({
@@ -132,7 +132,7 @@ export function useCodeMirror(
     }
 
     function getSelection() {
-        if (!editorView) return
+        if (!editorView) return undefined
 
         return {
             from: editorView.state.selection.main.from,

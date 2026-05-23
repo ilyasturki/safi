@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { shortcuts } from '~/composables/use-shortcuts'
-import KeyboardKey from './keyboard-key.vue'
 import { getKeyDisplay } from '~/utils/key-display'
+import KeyboardKey from './keyboard-key.vue'
 
 const isOpen = defineModel<boolean>('open', { default: false })
 

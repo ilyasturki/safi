@@ -25,6 +25,10 @@ export function getFilter(
             return selectionFilter(context)
         case 'paired':
             return pairedFilter(context, markerConfig)
+        default: {
+            const exhaustive: never = filterMode
+            return exhaustive
+        }
     }
 }
 
@@ -70,29 +74,25 @@ function findPair(
 
     tree.iterate({
         from: markerFrom,
-        enter: (node) => {
-            if (config.nodeNames.includes(node.name)) {
-                const nodeStart = node.from
-                const nodeEnd = node.to
-                const text = doc.sliceString(nodeStart, nodeEnd)
+        enter: (node): boolean | undefined => {
+            if (!config.nodeNames.includes(node.name)) return undefined
 
-                const markerLength = config.getMarkerLength(node.name, text)
+            const nodeStart = node.from
+            const nodeEnd = node.to
+            const text = doc.sliceString(nodeStart, nodeEnd)
 
-                // Check if this decoration is part of this pair (opening or closing marker)
-                const isOpeningMarker =
-                    markerFrom >= nodeStart
-                    && markerFrom < nodeStart + markerLength
-                const isClosingMarker =
-                    markerFrom >= nodeEnd - markerLength && markerFrom < nodeEnd
+            const markerLength = config.getMarkerLength(node.name, text)
 
-                if (isOpeningMarker || isClosingMarker) {
-                    result = {
-                        start: nodeStart,
-                        end: nodeEnd,
-                    }
-                    return false // Stop iteration
-                }
+            const isOpeningMarker =
+                markerFrom >= nodeStart && markerFrom < nodeStart + markerLength
+            const isClosingMarker =
+                markerFrom >= nodeEnd - markerLength && markerFrom < nodeEnd
+
+            if (isOpeningMarker || isClosingMarker) {
+                result = { start: nodeStart, end: nodeEnd }
+                return false
             }
+            return undefined
         },
     })
 

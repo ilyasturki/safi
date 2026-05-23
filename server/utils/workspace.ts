@@ -1,7 +1,8 @@
+import type { H3Event } from 'h3'
 import { constants } from 'node:fs'
 import { access, mkdir, readdir, stat } from 'node:fs/promises'
 import path from 'node:path'
-import type { H3Event } from 'h3'
+
 import type { FileMetadata, FolderMetadata } from '~~/shared/types/api'
 
 export function decodeRouterParam(event: H3Event, name: string): string {
@@ -105,35 +106,38 @@ export async function listDirectory(
     const entries = await readdir(absolutePath, { withFileTypes: true })
 
     const directories: FolderMetadata[] = []
-    const files: FileMetadata[] = []
-
-    for (const entry of entries) {
-        if (isHiddenFile(entry.name)) {
-            continue
-        }
-
-        const entryAbsolutePath = path.join(absolutePath, entry.name)
-        const entryRelativePath = path.relative(
-            workspacePath,
-            entryAbsolutePath,
-        )
-
-        if (entry.isDirectory()) {
-            directories.push({
-                name: entry.name,
-                path: entryRelativePath,
-            })
-        } else if (entry.isFile() && isMarkdownFile(entry.name)) {
-            const stats = await stat(entryAbsolutePath)
-            files.push(
-                getFileMetadata(
+    const fileResults = await Promise.all(
+        entries
+            .filter((entry) => !isHiddenFile(entry.name))
+            .map(async (entry): Promise<FileMetadata | undefined> => {
+                const entryAbsolutePath = path.join(absolutePath, entry.name)
+                const entryRelativePath = path.relative(
+                    workspacePath,
                     entryAbsolutePath,
-                    entryRelativePath,
-                    stats.mtime.getTime(),
-                ),
-            )
-        }
-    }
+                )
+
+                if (entry.isDirectory()) {
+                    directories.push({
+                        name: entry.name,
+                        path: entryRelativePath,
+                    })
+                    return undefined
+                }
+                if (entry.isFile() && isMarkdownFile(entry.name)) {
+                    const stats = await stat(entryAbsolutePath)
+                    return getFileMetadata(
+                        entryAbsolutePath,
+                        entryRelativePath,
+                        stats.mtime.getTime(),
+                    )
+                }
+                return undefined
+            }),
+    )
+
+    const files = fileResults.filter(
+        (file): file is FileMetadata => file !== undefined,
+    )
 
     return { files, directories }
 }
@@ -156,30 +160,35 @@ export async function listAllFilesRecursive(
 
     const entries = await readdir(absolutePath, { withFileTypes: true })
 
-    for (const entry of entries) {
-        if (isHiddenFile(entry.name)) {
-            continue
-        }
-
-        const entryAbsolutePath = path.join(absolutePath, entry.name)
-        const entryRelativePath = path.relative(
-            workspacePath,
-            entryAbsolutePath,
-        )
-
-        if (entry.isDirectory()) {
-            const subFiles = await listAllFilesRecursive(entryRelativePath)
-            allFiles.push(...subFiles)
-        } else if (entry.isFile() && isMarkdownFile(entry.name)) {
-            const stats = await stat(entryAbsolutePath)
-            allFiles.push(
-                getFileMetadata(
+    const results = await Promise.all(
+        entries
+            .filter((entry) => !isHiddenFile(entry.name))
+            .map(async (entry): Promise<FileMetadata[]> => {
+                const entryAbsolutePath = path.join(absolutePath, entry.name)
+                const entryRelativePath = path.relative(
+                    workspacePath,
                     entryAbsolutePath,
-                    entryRelativePath,
-                    stats.mtime.getTime(),
-                ),
-            )
-        }
+                )
+
+                if (entry.isDirectory()) {
+                    return listAllFilesRecursive(entryRelativePath)
+                }
+                if (entry.isFile() && isMarkdownFile(entry.name)) {
+                    const stats = await stat(entryAbsolutePath)
+                    return [
+                        getFileMetadata(
+                            entryAbsolutePath,
+                            entryRelativePath,
+                            stats.mtime.getTime(),
+                        ),
+                    ]
+                }
+                return []
+            }),
+    )
+
+    for (const subFiles of results) {
+        allFiles.push(...subFiles)
     }
 
     allFiles.sort((a, b) => b.mtime - a.mtime)
@@ -202,7 +211,11 @@ export async function validateNewPath(newAbsolutePath: string): Promise<void> {
             statusMessage: 'A file or folder with this name already exists',
         })
     } catch (error) {
-        if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+        if (
+            !(error instanceof Error)
+            || !('code' in error)
+            || error.code !== 'ENOENT'
+        ) {
             throw error
         }
     }

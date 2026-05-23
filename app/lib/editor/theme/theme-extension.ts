@@ -1,6 +1,6 @@
+import { boysAndGirls, clouds } from 'thememirror'
 import { syntaxHighlighting } from '@codemirror/language'
 import { EditorView } from '@codemirror/view'
-import { boysAndGirls, clouds } from 'thememirror'
 
 import { markdownStyles } from './bold-headings'
 import { headingOutdentTheme } from './heading-outdent-theme'

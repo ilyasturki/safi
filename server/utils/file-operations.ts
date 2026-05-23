@@ -1,12 +1,6 @@
-import {
-    access,
-    copyFile,
-    mkdir,
-    readdir,
-    readFile,
-    writeFile,
-} from 'node:fs/promises'
+import { copyFile, mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
+
 import { isHiddenFile, isMarkdownFile } from './workspace'
 
 export async function generateUniqueName(
@@ -19,18 +13,17 @@ export async function generateUniqueName(
         Math.max(0, baseName.lastIndexOf(ext)),
     )
 
-    let counter = 1
-    let uniqueName = baseName
+    const existing = new Set(await readdir(dirPath))
 
-    while (true) {
-        try {
-            await access(path.join(dirPath, uniqueName))
-            uniqueName = `${nameWithoutExt} (${counter})${ext}`
-            counter++
-        } catch {
-            return uniqueName
-        }
+    if (!existing.has(baseName)) return baseName
+
+    let counter = 1
+    let candidate = `${nameWithoutExt} (${counter})${ext}`
+    while (existing.has(candidate)) {
+        counter++
+        candidate = `${nameWithoutExt} (${counter})${ext}`
     }
+    return candidate
 }
 
 export async function copyFileWithContent(
@@ -49,18 +42,18 @@ export async function copyFolderRecursive(
 
     const entries = await readdir(sourcePath, { withFileTypes: true })
 
-    for (const entry of entries) {
-        if (isHiddenFile(entry.name)) {
-            continue
-        }
+    await Promise.all(
+        entries
+            .filter((entry) => !isHiddenFile(entry.name))
+            .map(async (entry) => {
+                const sourceEntryPath = path.join(sourcePath, entry.name)
+                const destEntryPath = path.join(destPath, entry.name)
 
-        const sourceEntryPath = path.join(sourcePath, entry.name)
-        const destEntryPath = path.join(destPath, entry.name)
-
-        if (entry.isDirectory()) {
-            await copyFolderRecursive(sourceEntryPath, destEntryPath)
-        } else if (entry.isFile() && isMarkdownFile(entry.name)) {
-            await copyFile(sourceEntryPath, destEntryPath)
-        }
-    }
+                if (entry.isDirectory()) {
+                    await copyFolderRecursive(sourceEntryPath, destEntryPath)
+                } else if (entry.isFile() && isMarkdownFile(entry.name)) {
+                    await copyFile(sourceEntryPath, destEntryPath)
+                }
+            }),
+    )
 }

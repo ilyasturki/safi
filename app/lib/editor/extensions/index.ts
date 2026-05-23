@@ -1,16 +1,17 @@
+import type { MaybeRef } from 'vue'
+import { unref } from 'vue'
+import { usePreferredDark } from '@vueuse/core'
+
+import { darkTheme, lightTheme } from '~/lib/editor/theme/theme-extension'
 import { baseExtensions } from './base-extensions'
+import { focusModeExtension } from './focus-mode'
 import { headingOutdentExtension } from './heading-outdent'
 import { keymapsExtension } from './keymap'
 import { liveMarkers } from './live-markers'
 import { markdownExtension } from './markdown'
 import { createPlaceholder } from './placeholder'
-import { focusModeExtension } from './focus-mode'
-import { noSpell } from './spellcheck'
 import { darkSelection, lightSelection } from './selection'
-import { usePreferredDark } from '@vueuse/core'
-import { darkTheme, lightTheme } from '~/lib/editor/theme/theme-extension'
-import type { MaybeRef } from 'vue'
-import { unref } from 'vue'
+import { noSpell } from './spellcheck'
 
 export interface UseExtensionsOptions {
     /** @default undefined */

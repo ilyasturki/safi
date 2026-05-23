@@ -1,5 +1,6 @@
-import type { FileResponse, FolderResponse } from '~~/shared/types/api'
 import { readFile, stat } from 'node:fs/promises'
+
+import type { FileResponse, FolderResponse } from '~~/shared/types/api'
 import {
     decodeRouterParam,
     resolveFilePath,

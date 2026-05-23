@@ -1,7 +1,7 @@
+import type { DecorationSet, EditorView, ViewUpdate } from '@codemirror/view'
 import { syntaxTree } from '@codemirror/language'
 import { RangeSetBuilder } from '@codemirror/state'
 import { Decoration, ViewPlugin } from '@codemirror/view'
-import type { DecorationSet, EditorView, ViewUpdate } from '@codemirror/view'
 
 const headingLineDecorations = {
     h1: Decoration.line({ attributes: { class: 'cm-heading-line-1' } }),

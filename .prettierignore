@@ -1,0 +1,14 @@
+# Build outputs
+.nuxt
+.output
+.data
+.nitro
+.cache
+dist
+node_modules
+
+# Lockfiles
+bun.lock
+
+# User content
+workspace

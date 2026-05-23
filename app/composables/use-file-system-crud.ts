@@ -1,3 +1,5 @@
+/* eslint-disable typescript/no-unsafe-type-assertion -- casts narrow string paths to Nitro typed-route placeholders so the correct method overload is picked. */
+
 async function createFile(path: string, content = '') {
     await $fetch(`/api/files/${path as ':path'}`, {
         method: 'POST',

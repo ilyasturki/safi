@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { watchDebounced } from '@vueuse/core'
+
+import type { FileResponse } from '~~/shared/types/api'
 import Editor from '~/components/editor.vue'
 import ExplorerDialog from '~/components/explorer-dialog.vue'
-import { useShortcut } from '~/composables/use-shortcuts'
 import { useLastEditedFile } from '~/composables/use-last-edited-file'
-import type { FileResponse } from '~~/shared/types/api'
 import { usePreferencesState } from '~/composables/use-preferences-state'
+import { useShortcut } from '~/composables/use-shortcuts'
 
 const props = defineProps<{
     file: FileResponse

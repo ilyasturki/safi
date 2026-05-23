@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import ShortcutsDialog from '~/components/shortcuts-dialog.vue'
 import FileSearchDialog from '~/components/file-search-dialog.vue'
+import ShortcutsDialog from '~/components/shortcuts-dialog.vue'
 import { useShortcut } from '~/composables/use-shortcuts'
 
 useHead({

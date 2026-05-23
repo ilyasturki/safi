@@ -4,15 +4,15 @@ import type {
     FolderMetadata,
     FolderResponse,
 } from '~~/shared/types/api'
+import { useClipboard } from '~/composables/use-clipboard'
+import { useContextMenu } from '~/composables/use-context-menu'
+import { useFileSystemCrud } from '~/composables/use-file-system-crud'
+import { useKeyboardListNavigation } from '~/composables/use-keyboard-list-navigation'
+import { navigateToEdit } from '~/utils/navigate-to-edit'
+import CreateItemDialog from './create-item-dialog.vue'
 import ExplorerItem from './explorer-item.vue'
 import FileContextMenu from './file-context-menu.vue'
 import RenameDialog from './rename-dialog.vue'
-import CreateItemDialog from './create-item-dialog.vue'
-import { navigateToEdit } from '~/utils/navigate-to-edit'
-import { useContextMenu } from '~/composables/use-context-menu'
-import { useKeyboardListNavigation } from '~/composables/use-keyboard-list-navigation'
-import { useFileSystemCrud } from '~/composables/use-file-system-crud'
-import { useClipboard } from '~/composables/use-clipboard'
 
 interface FileExplorerProps {
     folder: FolderResponse

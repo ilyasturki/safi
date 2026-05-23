@@ -1,0 +1,34 @@
+{
+    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "plugins": ["typescript", "unicorn", "oxc", "import", "promise", "vue"],
+    "categories": {
+        "correctness": "error",
+        "suspicious": "warn",
+        "perf": "warn"
+    },
+    "options": {
+        "typeAware": true
+    },
+    "env": {
+        "browser": true,
+        "es2024": true,
+        "node": true
+    },
+    "rules": {
+        "unicorn/filename-case": [
+            "warn",
+            {
+                "case": "kebabCase",
+                "ignore": [
+                    "README.md",
+                    "CLAUDE.md",
+                    "AGENTS.md",
+                    "GEMINI.md",
+                    "LICENSE",
+                    "Dockerfile",
+                    "workspace/.*\\.md$"
+                ]
+            }
+        ]
+    }
+}

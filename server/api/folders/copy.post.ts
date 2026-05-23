@@ -1,13 +1,14 @@
 import path from 'node:path'
+
+import {
+    copyFolderRecursive,
+    generateUniqueName,
+} from '~~/server/utils/file-operations'
 import {
     getWorkspacePath,
     isWithinWorkspace,
     resolvePath,
 } from '~~/server/utils/workspace'
-import {
-    copyFolderRecursive,
-    generateUniqueName,
-} from '~~/server/utils/file-operations'
 
 export default defineEventHandler(async (event) => {
     try {

@@ -1,12 +1,14 @@
-import type { FileResponse } from '~~/shared/types/api'
-import { access, readFile } from 'node:fs/promises'
 import { constants } from 'node:fs'
+import { access, readFile } from 'node:fs/promises'
+
+import type { FileResponse } from '~~/shared/types/api'
 import { listDirectory, resolveFilePath } from '~~/server/utils/workspace'
 
 export default defineEventHandler(
     async (event): Promise<FileResponse | undefined> => {
         const query = getQuery(event)
-        const pathParam = query.path as string | undefined
+        const pathParam =
+            typeof query.path === 'string' ? query.path : undefined
 
         if (pathParam) {
             const absolutePath = resolveFilePath(pathParam)
@@ -35,7 +37,7 @@ export default defineEventHandler(
 
         const [firstFile] = files
         if (firstFile === undefined) {
-            return
+            return undefined
         }
 
         const absolutePath = resolveFilePath(firstFile.path)

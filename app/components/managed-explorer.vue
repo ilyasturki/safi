@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import Explorer from '~/components/explorer.vue'
 import type { FolderResponse } from '~~/shared/types/api'
+import Explorer from '~/components/explorer.vue'
 import { navigateToEdit } from '~/utils/navigate-to-edit'
 
 const currentFolderPath = defineModel<string>('folder-path', { default: '' })
