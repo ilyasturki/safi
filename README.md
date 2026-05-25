@@ -18,7 +18,9 @@ A minimalist, self-hosted text editor for markdown files with a clean, mobile-fr
 
 ## Installation
 
-The easiest way to run Safi is using the pre-built Docker image from GitHub Container Registry. You will need to ensure that if the workspace directory exists, it is writable by the container.
+The easiest way to run Safi is using the pre-built Docker image from GitHub Container Registry.
+
+By default the container runs as uid/gid `1000:1000`, which matches the first regular user on most Linux desktops — so files in `./workspace` will be owned by you on the host and can be edited with any editor. If your host user has different ids (run `id` to check), set `PUID` and `PGID` accordingly.
 
 ### Docker
 
@@ -26,8 +28,9 @@ The easiest way to run Safi is using the pre-built Docker image from GitHub Cont
 docker run -d \
   --name safi \
   -p 3000:3000 \
+  -e PUID=$(id -u) -e PGID=$(id -g) \
   -v $(pwd)/workspace:/app/workspace \
-  ghcr.io/yasso9/safi:latest
+  ghcr.io/ilyasturki/safi:latest
 ```
 
 ### Docker Compose
@@ -35,9 +38,12 @@ docker run -d \
 ```yaml
 services:
     safi:
-        image: ghcr.io/yasso9/safi:latest
+        image: ghcr.io/ilyasturki/safi:latest
         ports:
             - '3000:3000'
+        environment:
+            - PUID=1000
+            - PGID=1000
         volumes:
             - ./workspace:/app/workspace
         restart: unless-stopped
