@@ -49,6 +49,35 @@ Then run:
 docker-compose up -d
 ```
 
+### NixOS
+
+Add Safi as an input to your NixOS flake:
+
+```nix
+{
+  inputs.safi.url = "github:Yasso9/safi";
+
+  outputs =
+    { nixpkgs, safi, ... }:
+    {
+      nixosConfigurations.your-host = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        modules = [
+          safi.nixosModules.default
+          {
+            services.safi = {
+              enable = true;
+              host = "0.0.0.0";
+              port = 3000;
+              workspacePath = "/var/lib/safi/workspace";
+            };
+          }
+        ];
+      };
+    };
+}
+```
+
 ### Building from Source
 
 ```bash
