@@ -1,6 +1,7 @@
 import { writeFile } from 'node:fs/promises'
 
 import type { FileRequest } from '~~/shared/types/api'
+import { throwFsError } from '~~/server/utils/errors'
 import {
     decodeRouterParam,
     ensureDirectoryExists,
@@ -34,14 +35,6 @@ export default defineEventHandler(async (event) => {
         }
     } catch (error) {
         console.error('Error creating file:', error)
-
-        if (error && typeof error === 'object' && 'statusCode' in error) {
-            throw error
-        }
-
-        throw createError({
-            statusCode: 500,
-            statusMessage: 'Failed to create file',
-        })
+        throwFsError(error, 'Failed to create file')
     }
 })

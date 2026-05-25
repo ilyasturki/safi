@@ -1,6 +1,7 @@
 import { writeFile } from 'node:fs/promises'
 
 import type { FileRequest } from '~~/shared/types/api'
+import { throwFsError } from '~~/server/utils/errors'
 import {
     decodeRouterParam,
     ensureDirectoryExists,
@@ -14,7 +15,7 @@ export default defineEventHandler(async (event) => {
         if (!path) {
             throw createError({
                 statusCode: 400,
-                message: 'File path is required',
+                statusMessage: 'File path is required',
             })
         }
 
@@ -27,7 +28,7 @@ export default defineEventHandler(async (event) => {
         ) {
             throw createError({
                 statusCode: 400,
-                message: 'File content is required',
+                statusMessage: 'File content is required',
             })
         }
 
@@ -42,14 +43,6 @@ export default defineEventHandler(async (event) => {
         }
     } catch (error) {
         console.error('Error writing file:', error)
-
-        if (error && typeof error === 'object' && 'statusCode' in error) {
-            throw error
-        }
-
-        throw createError({
-            statusCode: 500,
-            message: 'Failed to write file',
-        })
+        throwFsError(error, 'Failed to write file')
     }
 })

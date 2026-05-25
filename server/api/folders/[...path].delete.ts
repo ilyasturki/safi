@@ -1,5 +1,6 @@
 import { rm } from 'node:fs/promises'
 
+import { throwFsError } from '~~/server/utils/errors'
 import {
     decodeRouterParam,
     isWithinWorkspace,
@@ -34,14 +35,6 @@ export default defineEventHandler(async (event) => {
         }
     } catch (error) {
         console.error('Error deleting folder:', error)
-
-        if (error && typeof error === 'object' && 'statusCode' in error) {
-            throw error
-        }
-
-        throw createError({
-            statusCode: 500,
-            statusMessage: 'Failed to delete folder',
-        })
+        throwFsError(error, 'Failed to delete folder')
     }
 })

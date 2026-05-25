@@ -1,6 +1,7 @@
 import { rename } from 'node:fs/promises'
 import path from 'node:path'
 
+import { throwFsError } from '~~/server/utils/errors'
 import { generateUniqueName } from '~~/server/utils/file-operations'
 import {
     ensureDirectoryExists,
@@ -78,14 +79,6 @@ export default defineEventHandler(async (event) => {
         }
     } catch (error) {
         console.error('Error moving file:', error)
-
-        if (error && typeof error === 'object' && 'statusCode' in error) {
-            throw error
-        }
-
-        throw createError({
-            statusCode: 500,
-            statusMessage: 'Failed to move file',
-        })
+        throwFsError(error, 'Failed to move file')
     }
 })

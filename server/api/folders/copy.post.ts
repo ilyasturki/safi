@@ -1,5 +1,6 @@
 import path from 'node:path'
 
+import { throwFsError } from '~~/server/utils/errors'
 import {
     copyFolderRecursive,
     generateUniqueName,
@@ -76,14 +77,6 @@ export default defineEventHandler(async (event) => {
         }
     } catch (error) {
         console.error('Error copying folder:', error)
-
-        if (error && typeof error === 'object' && 'statusCode' in error) {
-            throw error
-        }
-
-        throw createError({
-            statusCode: 500,
-            statusMessage: 'Failed to copy folder',
-        })
+        throwFsError(error, 'Failed to copy folder')
     }
 })

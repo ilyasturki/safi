@@ -1,6 +1,7 @@
 import { rename } from 'node:fs/promises'
 import path from 'node:path'
 
+import { throwFsError } from '~~/server/utils/errors'
 import {
     decodeRouterParam,
     getWorkspacePath,
@@ -56,14 +57,6 @@ export default defineEventHandler(async (event) => {
         }
     } catch (error) {
         console.error('Error renaming folder:', error)
-
-        if (error && typeof error === 'object' && 'statusCode' in error) {
-            throw error
-        }
-
-        throw createError({
-            statusCode: 500,
-            statusMessage: 'Failed to rename folder',
-        })
+        throwFsError(error, 'Failed to rename folder')
     }
 })
