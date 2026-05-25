@@ -5,6 +5,10 @@ services:
         ports:
             - '3000:3000'
         environment:
+            # Match these to your host user (run `id` to find them).
+            # Files created in ./workspace will be owned by this user.
+            - PUID=1000
+            - PGID=1000
             # Server configuration
             - HOST=0.0.0.0
             - PORT=3000

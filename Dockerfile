@@ -17,19 +17,29 @@ RUN bun run build
 FROM oven/bun:1 AS production
 WORKDIR /app
 
-# Create non-root user for security
+# gosu is used by the entrypoint to drop privileges from root to the safi user
+# after fixing workspace ownership at runtime.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gosu \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user for security. The uid/gid are placeholders — the
+# entrypoint adjusts them at runtime to match PUID/PGID so bind-mounted
+# host directories work without manual chown.
 RUN groupadd -r safi && useradd -r -g safi safi
 
 # Only `.output` folder is needed from the build stage
 COPY --from=build /app/.output /app
 
-# Create workspace directory with proper permissions
-RUN mkdir -p /app/workspace && chown -R safi:safi /app
-# Switch to non-root user
-USER safi
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+RUN mkdir -p /app/workspace
 
 ENV NUXT_WORKSPACE_PATH=/app/workspace
+ENV PUID=1000
+ENV PGID=1000
 
-# Start the application
 EXPOSE 3000/tcp
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["bun", "run", "/app/server/index.mjs"]
