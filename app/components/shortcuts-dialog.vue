@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ShortcutScope } from '~/composables/use-shortcuts'
-import { shortcuts } from '~/composables/use-shortcuts'
+import { shortcuts, useActiveShortcuts } from '~/composables/use-shortcuts'
 import { getKeyDisplay } from '~/utils/key-display'
 import KeyboardKey from './keyboard-key.vue'
 
@@ -26,6 +26,8 @@ const scopeLabels: Record<ShortcutScope, string> = {
     explorer: 'Explorer',
 }
 
+const activeShortcuts = useActiveShortcuts()
+
 const groupedShortcuts = computed(() => {
     const groups: Record<ShortcutScope, { action: string; description: string; shortcut: (typeof shortcuts)[keyof typeof shortcuts] }[]> = {
         global: [],
@@ -34,6 +36,9 @@ const groupedShortcuts = computed(() => {
     }
     for (const [action, shortcut] of Object.entries(shortcuts)) {
         const scope = shortcut.scope ?? 'global'
+        if (scope !== 'global' && !activeShortcuts.value.has(action as keyof typeof shortcuts)) {
+            continue
+        }
         groups[scope].push({
             action,
             description: shortcut.description,

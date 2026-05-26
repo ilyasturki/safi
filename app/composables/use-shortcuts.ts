@@ -77,6 +77,22 @@ function isTypingKey(key: string): boolean {
     return key.length === 1
 }
 
+const activeShortcutCounts = reactive<Record<keyof typeof shortcuts, number>>(
+    Object.fromEntries(
+        Object.keys(shortcuts).map((action) => [action, 0]),
+    ) as Record<keyof typeof shortcuts, number>,
+)
+
+export function useActiveShortcuts() {
+    return computed(() => {
+        const set = new Set<keyof typeof shortcuts>()
+        for (const action of Object.keys(activeShortcutCounts) as (keyof typeof shortcuts)[]) {
+            if (activeShortcutCounts[action] > 0) set.add(action)
+        }
+        return set
+    })
+}
+
 export function useShortcut(
     action: keyof typeof shortcuts,
     callback: () => void,
@@ -123,11 +139,31 @@ export function useShortcut(
         }
     }
 
+    let isLive = false
+    const setLive = (live: boolean) => {
+        if (live === isLive) return
+        isLive = live
+        activeShortcutCounts[action] += live ? 1 : -1
+    }
+
+    let stopActiveWatch: (() => void) | undefined
+
     onMounted(() => {
         globalThis.addEventListener('keydown', handler)
+        if (activeRef) {
+            stopActiveWatch = watch(
+                activeRef,
+                (value) => setLive(value),
+                { immediate: true },
+            )
+        } else {
+            setLive(true)
+        }
     })
 
     onUnmounted(() => {
         globalThis.removeEventListener('keydown', handler)
+        stopActiveWatch?.()
+        setLive(false)
     })
 }
