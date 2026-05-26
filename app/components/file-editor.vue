@@ -64,13 +64,6 @@ useShortcut('toggle-focus-mode', () => {
 registerDockAction('open-explorer', () => {
     isExplorerOpen.value = true
 })
-
-const currentDirectory = computed(() => {
-    const segments = props.file.path.split('/').filter(Boolean)
-    if (segments.length === 0) return ''
-    segments.pop()
-    return segments.length === 0 ? '' : `/${segments.join('/')}`
-})
 </script>
 
 <template>
@@ -86,8 +79,5 @@ const currentDirectory = computed(() => {
             class="w-full max-w-[70ch]"
         />
     </div>
-    <ExplorerDialog
-        v-model:open="isExplorerOpen"
-        :initial-path="currentDirectory"
-    />
+    <ExplorerDialog v-model:open="isExplorerOpen" />
 </template>

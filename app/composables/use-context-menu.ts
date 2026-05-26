@@ -1,4 +1,5 @@
 const TOUCH_THRESHOLD = 500
+const POST_LONG_PRESS_CLICK_GRACE = 700
 
 export function useContextMenu<T, K extends string = string>() {
     const isOpen = ref(false)
@@ -10,6 +11,7 @@ export function useContextMenu<T, K extends string = string>() {
     let touchTimer: NodeJS.Timeout | undefined
     let touchStartX = 0
     let touchStartY = 0
+    let lastLongPressTime = 0
 
     function handleContextMenu(event: MouseEvent, item: T, type: K) {
         event.preventDefault()
@@ -34,7 +36,12 @@ export function useContextMenu<T, K extends string = string>() {
             y.value = touch.clientY
             isOpen.value = true
             touchTimer = undefined
+            lastLongPressTime = Date.now()
         }, TOUCH_THRESHOLD)
+    }
+
+    function isWithinLongPressGrace() {
+        return Date.now() - lastLongPressTime < POST_LONG_PRESS_CLICK_GRACE
     }
 
     function handleTouchMove(event: TouchEvent) {
@@ -73,6 +80,7 @@ export function useContextMenu<T, K extends string = string>() {
         handleTouchStart,
         handleTouchMove,
         handleTouchEnd,
+        isWithinLongPressGrace,
         close,
     }
 }

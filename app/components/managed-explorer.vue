@@ -3,20 +3,14 @@ import type { FolderResponse } from '~~/shared/types/api'
 import Explorer from '~/components/explorer.vue'
 import { navigateToEdit } from '~/utils/navigate-to-edit'
 
-const currentFolderPath = defineModel<string>('folder-path', { default: '' })
-
 withDefaults(defineProps<{ isActive?: boolean }>(), { isActive: true })
 
 const { data: folder, refresh } = await useFetch<FolderResponse>(
-    () => `/api/folders/${currentFolderPath.value}`,
+    () => `/api/folders/`,
     {
         lazy: true,
     },
 )
-
-function handleFolderClick(path: string) {
-    currentFolderPath.value = path
-}
 
 function handleFileClick(path: string) {
     navigateToEdit(path)
@@ -32,7 +26,6 @@ function handleRefresh() {
         v-if="folder"
         :folder="folder"
         :is-active="isActive"
-        @folder-click="handleFolderClick"
         @file-click="handleFileClick"
         @refresh="handleRefresh"
     />

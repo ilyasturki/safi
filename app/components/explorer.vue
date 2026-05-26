@@ -6,14 +6,20 @@ import type {
 } from '~~/shared/types/api'
 import { useClipboard } from '~/composables/use-clipboard'
 import { useContextMenu } from '~/composables/use-context-menu'
+import { registerDockAction } from '~/composables/use-dock'
+import { explorerContextKey } from '~/composables/use-explorer-context'
 import { useFileSystemCrud } from '~/composables/use-file-system-crud'
 import { useKeyboardListNavigation } from '~/composables/use-keyboard-list-navigation'
-import { useShortcut } from '~/composables/use-shortcuts'
+import { shortcuts, useShortcut } from '~/composables/use-shortcuts'
+import { getKeyDisplay } from '~/utils/key-display'
 import { navigateToEdit } from '~/utils/navigate-to-edit'
 import CreateItemDialog from './create-item-dialog.vue'
+import ExplorerFolderNode from './explorer-folder-node.vue'
 import ExplorerItem from './explorer-item.vue'
 import FileContextMenu from './file-context-menu.vue'
+import KeyboardKey from './keyboard-key.vue'
 import RenameDialog from './rename-dialog.vue'
+import { Icon } from '#components'
 
 interface FileExplorerProps {
     folder: FolderResponse
@@ -29,6 +35,13 @@ const emit = defineEmits<{
     refresh: []
 }>()
 
+const parentPath = computed(() => {
+    const segments = props.folder.currentPath.split('/').filter(Boolean)
+    if (segments.length === 0) return undefined
+    segments.pop()
+    return segments.length === 0 ? '' : segments.join('/')
+})
+
 const sortedDirectories = computed(() =>
     props.folder.directories.toSorted((a, b) => a.name.localeCompare(b.name)),
 )
@@ -36,13 +49,6 @@ const sortedDirectories = computed(() =>
 const sortedFiles = computed(() =>
     props.folder.files.toSorted((a, b) => a.name.localeCompare(b.name)),
 )
-
-const parentPath = computed(() => {
-    const segments = props.folder.currentPath.split('/').filter(Boolean)
-    if (segments.length === 0) return
-    segments.pop()
-    return segments.length === 0 ? '' : `/${segments.join('/')}`
-})
 
 const listContainerRef = useTemplateRef('listContainer')
 
@@ -58,6 +64,7 @@ const {
     handleTouchStart,
     handleTouchMove,
     handleTouchEnd,
+    isWithinLongPressGrace,
 } = useContextMenu<FileMetadata | FolderMetadata, 'document' | 'folder'>()
 
 const {
@@ -80,6 +87,13 @@ const renameDialogOpen = ref(false)
 const createDialogOpen = ref(false)
 const createItemType = ref<'document' | 'folder' | undefined>(undefined)
 
+const refreshNonce = ref(0)
+
+function triggerRefresh() {
+    refreshNonce.value++
+    emit('refresh')
+}
+
 function handleRename() {
     renameDialogOpen.value = true
 }
@@ -91,7 +105,7 @@ async function handleDelete() {
         deleteFile(selectedItem.value.path)
     :   deleteFolder(selectedItem.value.path))
 
-    emit('refresh')
+    triggerRefresh()
 }
 
 function handleCopy() {
@@ -125,7 +139,7 @@ async function handlePaste() {
             clearClipboard()
         }
 
-        emit('refresh')
+        triggerRefresh()
     } catch (error) {
         console.error('Error pasting:', error)
     }
@@ -138,7 +152,7 @@ async function confirmRename(newName: string) {
         renameFile(selectedItem.value.path, newName)
     :   renameFolder(selectedItem.value.path, newName))
 
-    emit('refresh')
+    triggerRefresh()
 }
 
 async function handleCreateFile() {
@@ -163,20 +177,57 @@ async function confirmCreate(name: string) {
         createFile(newPath)
     :   createFolder(newPath))
 
+    triggerRefresh()
     navigateToEdit(newPath)
 }
 
+function handleFileClickEmit(path: string) {
+    emit('fileClick', path)
+}
+
+function handleFolderContextMenu(event: MouseEvent, directory: FolderMetadata) {
+    handleContextMenu(event, directory, 'folder')
+}
+
+function handleFileContextMenu(event: MouseEvent, file: FileMetadata) {
+    handleContextMenu(event, file, 'document')
+}
+
+function handleFolderTouchStart(event: TouchEvent, directory: FolderMetadata) {
+    handleTouchStart(event, directory, 'folder')
+}
+
+function handleFileTouchStart(event: TouchEvent, file: FileMetadata) {
+    handleTouchStart(event, file, 'document')
+}
+
+provide(explorerContextKey, {
+    handleFileClick: handleFileClickEmit,
+    handleKeyDown,
+    handleFolderContextMenu,
+    handleFileContextMenu,
+    handleFolderTouchStart,
+    handleFileTouchStart,
+    handleTouchMove,
+    handleTouchEnd,
+    isWithinLongPressGrace,
+    refreshNonce,
+})
+
 useShortcut('create-document', handleCreateFile, () => props.isActive)
 useShortcut('create-folder', handleCreateFolder, () => props.isActive)
+
+registerDockAction('new-document', handleCreateFile)
+registerDockAction('new-folder', handleCreateFolder)
 </script>
 
 <template>
     <div
         ref="listContainer"
-        class="flex flex-col font-mono text-white"
+        class="flex min-h-0 flex-1 flex-col font-mono text-white"
     >
         <ul
-            class="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800 [&>li:first-child]:rounded-t-lg"
+            class="flex min-h-0 flex-1 flex-col divide-y divide-zinc-200 overflow-y-auto dark:divide-zinc-800"
         >
             <ExplorerItem
                 v-if="parentPath !== undefined"
@@ -188,21 +239,12 @@ useShortcut('create-folder', handleCreateFolder, () => props.isActive)
                 go to parent folder
             </ExplorerItem>
 
-            <ExplorerItem
+            <ExplorerFolderNode
                 v-for="directory in sortedDirectories"
                 :key="directory.path"
-                icon="lucide:folder"
-                @dblclick="emit('folderClick', directory.path)"
-                @keydown.enter.prevent="emit('folderClick', directory.path)"
-                @contextmenu="handleContextMenu($event, directory, 'folder')"
-                @touchstart="handleTouchStart($event, directory, 'folder')"
-                @touchmove="handleTouchMove"
-                @touchend="handleTouchEnd"
-                @touchcancel="handleTouchEnd"
-                @keydown="handleKeyDown"
-            >
-                {{ directory.name }}
-            </ExplorerItem>
+                :directory="directory"
+                :depth="0"
+            />
 
             <ExplorerItem
                 v-for="file in sortedFiles"
@@ -210,8 +252,8 @@ useShortcut('create-folder', handleCreateFolder, () => props.isActive)
                 icon="lucide:file-text"
                 @dblclick="emit('fileClick', file.path)"
                 @keydown.enter.prevent="emit('fileClick', file.path)"
-                @contextmenu="handleContextMenu($event, file, 'document')"
-                @touchstart="handleTouchStart($event, file, 'document')"
+                @contextmenu="handleFileContextMenu($event, file)"
+                @touchstart="handleFileTouchStart($event, file)"
                 @touchmove="handleTouchMove"
                 @touchend="handleTouchEnd"
                 @touchcancel="handleTouchEnd"
@@ -221,27 +263,39 @@ useShortcut('create-folder', handleCreateFolder, () => props.isActive)
             </ExplorerItem>
         </ul>
 
-        <ul
-            class="sticky bottom-0 flex flex-col divide-y divide-zinc-200 border-t border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 [&>li:last-child]:rounded-b-lg"
+        <div
+            class="sticky bottom-0 flex shrink-0 border-t border-zinc-300 bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800"
         >
-            <ExplorerItem
-                icon="lucide:file-plus"
-                @dblclick="handleCreateFile"
-                @keydown.enter.prevent="handleCreateFile"
+            <button
+                type="button"
+                tabindex="0"
+                class="flex flex-1 items-center justify-center gap-2 py-2.5 text-sm text-zinc-700 transition-colors hover:bg-zinc-200 hover:text-zinc-900 focus:bg-zinc-200 focus:outline-none dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-zinc-100 dark:focus:bg-zinc-700"
+                @click="handleCreateFile"
                 @keydown="handleKeyDown"
             >
-                create new document
-            </ExplorerItem>
-
-            <ExplorerItem
-                icon="lucide:folder-plus"
-                @dblclick="handleCreateFolder"
-                @keydown.enter.prevent="handleCreateFolder"
+                <Icon
+                    name="lucide:file-plus"
+                    class="text-base"
+                />
+                new document
+                <KeyboardKey :keys="getKeyDisplay(shortcuts['create-document'])" />
+            </button>
+            <div class="w-px bg-zinc-300 dark:bg-zinc-700" />
+            <button
+                type="button"
+                tabindex="0"
+                class="flex flex-1 items-center justify-center gap-2 py-2.5 text-sm text-zinc-700 transition-colors hover:bg-zinc-200 hover:text-zinc-900 focus:bg-zinc-200 focus:outline-none dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-zinc-100 dark:focus:bg-zinc-700"
+                @click="handleCreateFolder"
                 @keydown="handleKeyDown"
             >
-                create new folder
-            </ExplorerItem>
-        </ul>
+                <Icon
+                    name="lucide:folder-plus"
+                    class="text-base"
+                />
+                new folder
+                <KeyboardKey :keys="getKeyDisplay(shortcuts['create-folder'])" />
+            </button>
+        </div>
     </div>
 
     <FileContextMenu
