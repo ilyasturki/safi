@@ -12,7 +12,12 @@ const props = defineProps<{
     file: FileResponse
 }>()
 
+const editorRef = useTemplateRef('editorRef')
 const content = ref('')
+
+function onWrapperMousedown(event: MouseEvent) {
+    editorRef.value?.focusFromGutterClick(event)
+}
 
 watchEffect(() => {
     content.value = props.file.content
@@ -54,8 +59,12 @@ const currentDirectory = computed(() => {
 </script>
 
 <template>
-    <div class="flex min-h-screen items-start justify-center">
+    <div
+        class="flex min-h-screen cursor-text items-start justify-center"
+        @mousedown="onWrapperMousedown"
+    >
         <Editor
+            ref="editorRef"
             v-model:content="content"
             placeholder="Start typing your markdown..."
             :enable-focus-mode

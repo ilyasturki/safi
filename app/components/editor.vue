@@ -24,6 +24,7 @@ const {
     getSelection,
     setSelection,
     updateContent,
+    focusFromGutterClick,
 } = useCodeMirror(content, editorEl, {
     placeholder: props.placeholder,
     enableFocusMode: toRef(() => props.enableFocusMode),
@@ -37,6 +38,7 @@ defineExpose({
     getSelection,
     setSelection,
     updateContent,
+    focusFromGutterClick,
 })
 </script>
 

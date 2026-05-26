@@ -148,6 +148,56 @@ export function useCodeMirror(
         })
     }
 
+    function focusFromGutterClick(event: MouseEvent) {
+        if (!editorView) return
+
+        const { contentDOM } = editorView
+
+        if (
+            event.target instanceof Node
+            && contentDOM.contains(event.target)
+        ) {
+            return
+        }
+
+        const rect = contentDOM.getBoundingClientRect()
+        if (rect.width === 0 || rect.height === 0) return
+
+        const clampedY = Math.max(
+            rect.top + 1,
+            Math.min(event.clientY, rect.bottom - 1),
+        )
+
+        const pos = editorView.posAtCoords(
+            { x: rect.right - 1, y: clampedY },
+            false,
+        )
+        if (pos == null) return
+
+        const line = editorView.state.doc.lineAt(pos)
+        const lineEndCoords = editorView.coordsAtPos(line.to)
+        if (!lineEndCoords) return
+
+        event.preventDefault()
+        editorView.focus()
+
+        const synthetic = new MouseEvent('mousedown', {
+            bubbles: true,
+            cancelable: true,
+            view: window,
+            button: event.button,
+            buttons: event.buttons,
+            clientX: lineEndCoords.right + 2,
+            clientY: (lineEndCoords.top + lineEndCoords.bottom) / 2,
+            shiftKey: event.shiftKey,
+            ctrlKey: event.ctrlKey,
+            altKey: event.altKey,
+            metaKey: event.metaKey,
+            detail: event.detail,
+        })
+        contentDOM.dispatchEvent(synthetic)
+    }
+
     const editorViewRef = computed(() => editorView)
 
     return {
@@ -164,5 +214,6 @@ export function useCodeMirror(
         getSelection,
         setSelection,
         updateContent: updateEditorContent,
+        focusFromGutterClick,
     }
 }
