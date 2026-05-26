@@ -12,6 +12,7 @@ type ShortcutAction =
     | 'new-file'
     | 'toggle-focus-mode'
     | 'open-file-search'
+    | 'open-preferences'
 export const shortcuts: Record<ShortcutAction, ShortcutOptions> = {
     'show-shortcuts': {
         description: 'Show keyboard shortcuts',
@@ -37,6 +38,11 @@ export const shortcuts: Record<ShortcutAction, ShortcutOptions> = {
         key: 'd',
         ctrl: true,
         shift: true,
+    },
+    'open-preferences': {
+        description: 'Open preferences',
+        key: ',',
+        ctrl: true,
     },
 }
 

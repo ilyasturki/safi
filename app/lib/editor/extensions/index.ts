@@ -10,7 +10,7 @@ import { keymapsExtension } from './keymap'
 import { liveMarkers } from './live-markers'
 import { markdownExtension } from './markdown'
 import { createPlaceholder } from './placeholder'
-import { darkSelection, lightSelection } from './selection'
+import { selectionExtension } from './selection'
 import { noSpell } from './spellcheck'
 
 export interface UseExtensionsOptions {
@@ -56,7 +56,7 @@ export function useExtensions(options: UseExtensionsOptions = {}) {
         return [
             ...extensions,
             ...(isDark.value ? darkTheme : lightTheme),
-            ...(isDark.value ? darkSelection : lightSelection),
+            ...selectionExtension,
         ]
     })
 }

@@ -168,37 +168,14 @@ const baseSelectionTheme = EditorView.baseTheme({
     '.cm-minimal-selection': {
         position: 'absolute',
         minHeight: '100%',
+        backgroundColor: 'var(--safi-primary-selection)',
     },
     '.cm-content ::selection': {
         backgroundColor: 'transparent !important',
     },
+    '.cm-selectionMatch': {
+        backgroundColor: 'var(--safi-primary-match) !important',
+    },
 })
 
-const lightSelectionTheme = EditorView.theme(
-    {
-        '.cm-minimal-selection': {
-            backgroundColor: 'rgba(0, 0, 0, 0.08)',
-        },
-    },
-    { dark: false },
-)
-
-const darkSelectionTheme = EditorView.theme(
-    {
-        '.cm-minimal-selection': {
-            backgroundColor: 'rgba(255, 255, 255, 0.15)',
-        },
-    },
-    { dark: true },
-)
-
-export const lightSelection = [
-    selectionPlugin,
-    baseSelectionTheme,
-    lightSelectionTheme,
-]
-export const darkSelection = [
-    selectionPlugin,
-    baseSelectionTheme,
-    darkSelectionTheme,
-]
+export const selectionExtension = [selectionPlugin, baseSelectionTheme]
