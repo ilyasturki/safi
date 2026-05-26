@@ -1,6 +1,6 @@
 import type { MaybeRefOrGetter } from 'vue'
 
-export type ShortcutScope = 'global' | 'explorer'
+export type ShortcutScope = 'global' | 'home' | 'explorer'
 
 export interface ShortcutOptions {
     description: string
@@ -40,6 +40,7 @@ export const shortcuts: Record<ShortcutAction, ShortcutOptions> = {
         description: 'Create a new file',
         key: 'm',
         ctrl: true,
+        scope: 'home',
     },
     'toggle-focus-mode': {
         description: 'Toggle focus mode',
@@ -72,6 +73,10 @@ function isTypingTarget(target: EventTarget | null): boolean {
     return target.isContentEditable
 }
 
+function isTypingKey(key: string): boolean {
+    return key.length === 1
+}
+
 export function useShortcut(
     action: keyof typeof shortcuts,
     callback: () => void,
@@ -90,7 +95,11 @@ export function useShortcut(
             options.ctrl === true
             || options.alt === true
             || options.shift === true
-        if (!hasModifier && isTypingTarget(event.target)) return
+        if (
+            !hasModifier
+            && isTypingKey(options.key)
+            && isTypingTarget(event.target)
+        ) return
 
         const matchesKey = event.key.toLowerCase() === options.key.toLowerCase()
 

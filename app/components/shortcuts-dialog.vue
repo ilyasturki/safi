@@ -22,12 +22,14 @@ function handleClose() {
 
 const scopeLabels: Record<ShortcutScope, string> = {
     global: 'Global',
+    home: 'Home',
     explorer: 'Explorer',
 }
 
 const groupedShortcuts = computed(() => {
     const groups: Record<ShortcutScope, { action: string; description: string; shortcut: (typeof shortcuts)[keyof typeof shortcuts] }[]> = {
         global: [],
+        home: [],
         explorer: [],
     }
     for (const [action, shortcut] of Object.entries(shortcuts)) {
