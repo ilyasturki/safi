@@ -11,10 +11,11 @@ export function useKeyboardListNavigation(
         if (items.length === 0) return
 
         const { activeElement } = document
-        const currentIndex =
+        const focusedIndex =
             activeElement instanceof HTMLElement ?
                 items.indexOf(activeElement)
-            :   undefined
+            :   -1
+        const currentIndex = focusedIndex === -1 ? undefined : focusedIndex
 
         if (event.key === 'ArrowDown') {
             event.preventDefault()
