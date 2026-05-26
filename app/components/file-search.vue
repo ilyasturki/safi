@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FileMetadata } from '~~/shared/types/api'
 import { Icon } from '#components'
+import { useOpenedFiles } from '~/composables/use-opened-files'
 import { HTTP_STATUS } from '~~/shared/utils/http-status'
 
 const searchQuery = ref('')
@@ -13,12 +14,37 @@ const {
     refresh,
 } = await useFetch<FileMetadata[]>('/api/files')
 
-const filteredFiles = computed(() => {
+const { openedAt, pruneOpenedFiles } = useOpenedFiles()
+
+watch(
+    files,
+    (next) => {
+        if (next) pruneOpenedFiles(next.map((file) => file.path))
+    },
+    { immediate: true },
+)
+
+const sortedFiles = computed(() => {
     if (!files.value) return []
-    if (!searchQuery.value.trim()) return files.value
+    return files.value.toSorted((a, b) => {
+        const aOpened = openedAt.value[a.path]
+        const bOpened = openedAt.value[b.path]
+        if (aOpened !== undefined && bOpened !== undefined) {
+            return bOpened - aOpened
+        }
+        if (aOpened !== undefined) return -1
+        if (bOpened !== undefined) return 1
+        return b.mtime - a.mtime
+    })
+})
+
+const filteredFiles = computed(() => {
+    if (!searchQuery.value.trim()) return sortedFiles.value
 
     const query = searchQuery.value.toLowerCase()
-    return files.value.filter((file) => file.path.toLowerCase().includes(query))
+    return sortedFiles.value.filter((file) =>
+        file.path.toLowerCase().includes(query),
+    )
 })
 
 const isLoading = computed(() => status.value === 'pending')

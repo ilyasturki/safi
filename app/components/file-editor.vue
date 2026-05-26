@@ -6,12 +6,22 @@ import Editor from '~/components/editor.vue'
 import ExplorerDialog from '~/components/explorer-dialog.vue'
 import { registerDockAction } from '~/composables/use-dock'
 import { useLastEditedFile } from '~/composables/use-last-edited-file'
+import { useOpenedFiles } from '~/composables/use-opened-files'
 import { usePreferencesState } from '~/composables/use-preferences-state'
 import { useShortcut } from '~/composables/use-shortcuts'
 
 const props = defineProps<{
     file: FileResponse
 }>()
+
+const { markFileOpened } = useOpenedFiles()
+watch(
+    () => props.file.path,
+    (path) => {
+        if (path) markFileOpened(path)
+    },
+    { immediate: true },
+)
 
 const editorRef = useTemplateRef('editorRef')
 const content = ref('')
