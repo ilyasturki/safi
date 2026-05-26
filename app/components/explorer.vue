@@ -8,6 +8,7 @@ import { useClipboard } from '~/composables/use-clipboard'
 import { useContextMenu } from '~/composables/use-context-menu'
 import { useFileSystemCrud } from '~/composables/use-file-system-crud'
 import { useKeyboardListNavigation } from '~/composables/use-keyboard-list-navigation'
+import { useShortcut } from '~/composables/use-shortcuts'
 import { navigateToEdit } from '~/utils/navigate-to-edit'
 import CreateItemDialog from './create-item-dialog.vue'
 import ExplorerItem from './explorer-item.vue'
@@ -16,9 +17,12 @@ import RenameDialog from './rename-dialog.vue'
 
 interface FileExplorerProps {
     folder: FolderResponse
+    isActive?: boolean
 }
 
-const props = defineProps<FileExplorerProps>()
+const props = withDefaults(defineProps<FileExplorerProps>(), {
+    isActive: true,
+})
 const emit = defineEmits<{
     folderClick: [path: string]
     fileClick: [path: string]
@@ -137,13 +141,15 @@ async function confirmRename(newName: string) {
     emit('refresh')
 }
 
-function handleCreateFile() {
+async function handleCreateFile() {
     createItemType.value = 'document'
+    await nextTick()
     createDialogOpen.value = true
 }
 
-function handleCreateFolder() {
+async function handleCreateFolder() {
     createItemType.value = 'folder'
+    await nextTick()
     createDialogOpen.value = true
 }
 
@@ -159,73 +165,84 @@ async function confirmCreate(name: string) {
 
     navigateToEdit(newPath)
 }
+
+useShortcut('create-document', handleCreateFile, () => props.isActive)
+useShortcut('create-folder', handleCreateFolder, () => props.isActive)
 </script>
 
 <template>
-    <ul
+    <div
         ref="listContainer"
-        class="flex flex-col divide-y divide-zinc-200 font-mono text-white dark:divide-zinc-800"
+        class="flex flex-col font-mono text-white"
     >
-        <ExplorerItem
-            v-if="parentPath !== undefined"
-            icon="lucide:folder-up"
-            @dblclick="emit('folderClick', parentPath)"
-            @keydown.enter.prevent="emit('folderClick', parentPath)"
-            @keydown="handleKeyDown"
+        <ul
+            class="flex flex-col divide-y divide-zinc-200 dark:divide-zinc-800 [&>li:first-child]:rounded-t-lg"
         >
-            go to parent folder
-        </ExplorerItem>
+            <ExplorerItem
+                v-if="parentPath !== undefined"
+                icon="lucide:folder-up"
+                @dblclick="emit('folderClick', parentPath)"
+                @keydown.enter.prevent="emit('folderClick', parentPath)"
+                @keydown="handleKeyDown"
+            >
+                go to parent folder
+            </ExplorerItem>
 
-        <ExplorerItem
-            v-for="directory in sortedDirectories"
-            :key="directory.path"
-            icon="lucide:folder"
-            @dblclick="emit('folderClick', directory.path)"
-            @keydown.enter.prevent="emit('folderClick', directory.path)"
-            @contextmenu="handleContextMenu($event, directory, 'folder')"
-            @touchstart="handleTouchStart($event, directory, 'folder')"
-            @touchmove="handleTouchMove"
-            @touchend="handleTouchEnd"
-            @touchcancel="handleTouchEnd"
-            @keydown="handleKeyDown"
-        >
-            {{ directory.name }}
-        </ExplorerItem>
+            <ExplorerItem
+                v-for="directory in sortedDirectories"
+                :key="directory.path"
+                icon="lucide:folder"
+                @dblclick="emit('folderClick', directory.path)"
+                @keydown.enter.prevent="emit('folderClick', directory.path)"
+                @contextmenu="handleContextMenu($event, directory, 'folder')"
+                @touchstart="handleTouchStart($event, directory, 'folder')"
+                @touchmove="handleTouchMove"
+                @touchend="handleTouchEnd"
+                @touchcancel="handleTouchEnd"
+                @keydown="handleKeyDown"
+            >
+                {{ directory.name }}
+            </ExplorerItem>
 
-        <ExplorerItem
-            v-for="file in sortedFiles"
-            :key="file.path"
-            icon="lucide:file-text"
-            @dblclick="emit('fileClick', file.path)"
-            @keydown.enter.prevent="emit('fileClick', file.path)"
-            @contextmenu="handleContextMenu($event, file, 'document')"
-            @touchstart="handleTouchStart($event, file, 'document')"
-            @touchmove="handleTouchMove"
-            @touchend="handleTouchEnd"
-            @touchcancel="handleTouchEnd"
-            @keydown="handleKeyDown"
-        >
-            {{ file.name }}
-        </ExplorerItem>
+            <ExplorerItem
+                v-for="file in sortedFiles"
+                :key="file.path"
+                icon="lucide:file-text"
+                @dblclick="emit('fileClick', file.path)"
+                @keydown.enter.prevent="emit('fileClick', file.path)"
+                @contextmenu="handleContextMenu($event, file, 'document')"
+                @touchstart="handleTouchStart($event, file, 'document')"
+                @touchmove="handleTouchMove"
+                @touchend="handleTouchEnd"
+                @touchcancel="handleTouchEnd"
+                @keydown="handleKeyDown"
+            >
+                {{ file.name }}
+            </ExplorerItem>
+        </ul>
 
-        <ExplorerItem
-            icon="lucide:file-plus"
-            @dblclick="handleCreateFile"
-            @keydown.enter.prevent="handleCreateFile"
-            @keydown="handleKeyDown"
+        <ul
+            class="sticky bottom-0 flex flex-col divide-y divide-zinc-200 border-t border-zinc-200 bg-white dark:divide-zinc-800 dark:border-zinc-800 dark:bg-zinc-900 [&>li:last-child]:rounded-b-lg"
         >
-            create new document
-        </ExplorerItem>
+            <ExplorerItem
+                icon="lucide:file-plus"
+                @dblclick="handleCreateFile"
+                @keydown.enter.prevent="handleCreateFile"
+                @keydown="handleKeyDown"
+            >
+                create new document
+            </ExplorerItem>
 
-        <ExplorerItem
-            icon="lucide:folder-plus"
-            @dblclick="handleCreateFolder"
-            @keydown.enter.prevent="handleCreateFolder"
-            @keydown="handleKeyDown"
-        >
-            create new folder
-        </ExplorerItem>
-    </ul>
+            <ExplorerItem
+                icon="lucide:folder-plus"
+                @dblclick="handleCreateFolder"
+                @keydown.enter.prevent="handleCreateFolder"
+                @keydown="handleKeyDown"
+            >
+                create new folder
+            </ExplorerItem>
+        </ul>
+    </div>
 
     <FileContextMenu
         v-model:open="contextMenuOpen"

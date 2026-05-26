@@ -1,9 +1,14 @@
+import type { MaybeRefOrGetter } from 'vue'
+
+export type ShortcutScope = 'global' | 'explorer'
+
 export interface ShortcutOptions {
     description: string
     key: string
     ctrl?: boolean // Automatically uses Cmd on Mac, Ctrl on Windows/Linux
     alt?: boolean
     shift?: boolean
+    scope?: ShortcutScope // defaults to 'global'
 }
 
 type ShortcutAction =
@@ -13,6 +18,9 @@ type ShortcutAction =
     | 'toggle-focus-mode'
     | 'open-file-search'
     | 'open-preferences'
+    | 'create-document'
+    | 'create-folder'
+
 export const shortcuts: Record<ShortcutAction, ShortcutOptions> = {
     'show-shortcuts': {
         description: 'Show keyboard shortcuts',
@@ -44,21 +52,48 @@ export const shortcuts: Record<ShortcutAction, ShortcutOptions> = {
         key: ',',
         ctrl: true,
     },
+    'create-document': {
+        description: 'Create new document',
+        key: 'n',
+        scope: 'explorer',
+    },
+    'create-folder': {
+        description: 'Create new folder',
+        key: 'n',
+        shift: true,
+        scope: 'explorer',
+    },
+}
+
+function isTypingTarget(target: EventTarget | null): boolean {
+    if (!(target instanceof HTMLElement)) return false
+    const tag = target.tagName
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true
+    return target.isContentEditable
 }
 
 export function useShortcut(
     action: keyof typeof shortcuts,
     callback: () => void,
+    isActive?: MaybeRefOrGetter<boolean>,
 ) {
     const options = shortcuts[action]
     if (!options) throw new Error(`Shortcut not found: ${action}`)
 
     const isMac = navigator.userAgent.toLowerCase().includes('mac')
+    const activeRef = isActive == null ? undefined : toRef(isActive)
 
     const handler = (event: KeyboardEvent) => {
+        if (activeRef && !activeRef.value) return
+
+        const hasModifier =
+            options.ctrl === true
+            || options.alt === true
+            || options.shift === true
+        if (!hasModifier && isTypingTarget(event.target)) return
+
         const matchesKey = event.key.toLowerCase() === options.key.toLowerCase()
 
-        // On Mac, ctrl option translates to meta key (Cmd)
         const shouldCheckCtrl = options.ctrl && !isMac
         const shouldCheckMeta = options.ctrl && isMac
 

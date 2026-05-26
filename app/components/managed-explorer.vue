@@ -5,6 +5,8 @@ import { navigateToEdit } from '~/utils/navigate-to-edit'
 
 const currentFolderPath = defineModel<string>('folder-path', { default: '' })
 
+withDefaults(defineProps<{ isActive?: boolean }>(), { isActive: true })
+
 const { data: folder, refresh } = await useFetch<FolderResponse>(
     () => `/api/folders/${currentFolderPath.value}`,
     {
@@ -29,6 +31,7 @@ function handleRefresh() {
     <Explorer
         v-if="folder"
         :folder="folder"
+        :is-active="isActive"
         @folder-click="handleFolderClick"
         @file-click="handleFileClick"
         @refresh="handleRefresh"
