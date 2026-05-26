@@ -6,7 +6,7 @@
   outputs =
     { self, nixpkgs }:
     let
-      lib = nixpkgs.lib;
+      inherit (nixpkgs) lib;
       systems = [
         "x86_64-linux"
         "aarch64-linux"
@@ -36,7 +36,7 @@
           node_modules = pkgs.stdenvNoCC.mkDerivation {
             pname = "safi-node_modules";
             inherit src;
-            version = packageJson.version;
+            inherit (packageJson) version;
 
             nativeBuildInputs = [
               pkgs.bun
@@ -68,7 +68,7 @@
           safi = pkgs.stdenvNoCC.mkDerivation {
             pname = "safi";
             inherit src;
-            version = packageJson.version;
+            inherit (packageJson) version;
 
             nativeBuildInputs = [
               pkgs.bun
@@ -109,7 +109,7 @@
         in
         {
           default = safi;
-          safi = safi;
+          inherit safi;
         }
       );
 
@@ -128,7 +128,7 @@
             enable = lib.mkEnableOption "Safi";
             package = lib.mkOption {
               type = lib.types.package;
-              default = self.packages.${pkgs.stdenv.hostPlatform.system}.default;
+              inherit (self.packages.${pkgs.stdenv.hostPlatform.system}) default;
             };
             workspacePath = lib.mkOption {
               type = lib.types.str;
@@ -142,9 +142,33 @@
               type = lib.types.port;
               default = 3000;
             };
+            user = lib.mkOption {
+              type = lib.types.str;
+              default = "safi";
+              description = ''
+                User to run safi as. Defaults to a dedicated system user.
+                Set to your own user if you want workspace files owned by you
+                so they can be edited with other tools (e.g. nvim, vscode).
+              '';
+            };
+            group = lib.mkOption {
+              type = lib.types.str;
+              default = "safi";
+            };
           };
 
           config = lib.mkIf cfg.enable {
+            users.users = lib.mkIf (cfg.user == "safi") {
+              safi = {
+                isSystemUser = true;
+                inherit (cfg) group;
+                home = "/var/lib/safi";
+              };
+            };
+            users.groups = lib.mkIf (cfg.group == "safi") {
+              safi = { };
+            };
+
             systemd.services.safi = {
               wantedBy = [ "multi-user.target" ];
               after = [ "network.target" ];
@@ -155,12 +179,16 @@
               };
               serviceConfig = {
                 ExecStartPre = "+${pkgs.writeShellScript "safi-init-workspace" ''
-                  ${pkgs.coreutils}/bin/mkdir -p ${lib.escapeShellArg cfg.workspacePath}
-                  ${pkgs.coreutils}/bin/chown safi:safi ${lib.escapeShellArg cfg.workspacePath}
+                  # No `-p`: if a parent directory is missing, fail loudly rather
+                  # than silently creating root-owned ancestors that the service
+                  # user can't write to later.
+                  ${pkgs.coreutils}/bin/mkdir ${lib.escapeShellArg cfg.workspacePath} 2>/dev/null || true
+                  ${pkgs.coreutils}/bin/chown ${cfg.user}:${cfg.group} ${lib.escapeShellArg cfg.workspacePath}
                 ''}";
                 ExecStart = lib.getExe cfg.package;
                 Restart = "on-failure";
-                DynamicUser = true;
+                User = cfg.user;
+                Group = cfg.group;
                 StateDirectory = "safi";
                 WorkingDirectory = "/var/lib/safi";
               };
