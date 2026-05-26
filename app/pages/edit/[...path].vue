@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Explorer from '~/components/explorer.vue'
 import FileEditor from '~/components/file-editor.vue'
+import { setDockView } from '~/composables/use-dock'
 import { navigateToEdit } from '~/utils/navigate-to-edit'
 
 const route = useRoute()
@@ -14,9 +15,18 @@ const { data: entry, refresh } = await useFetch(
     () => `/api/entry/${entryPath.value}`,
 )
 
+function syncDockView() {
+    if (entry.value?.type === 'folder') setDockView('explorer')
+    else if (entry.value?.type === 'file') setDockView('editor')
+}
+
+syncDockView()
+watch(() => entry.value?.type, syncDockView)
+
 function handleFolderClick(path: string) {
     navigateToEdit(path)
 }
+
 function handleFileClick(path: string) {
     navigateToEdit(path)
 }

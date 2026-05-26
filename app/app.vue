@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { usePreferredDark } from '@vueuse/core'
 
+import Dock from '~/components/dock.vue'
 import FileSearchDialog from '~/components/file-search-dialog.vue'
 import PreferencesDialog from '~/components/preferences-dialog.vue'
 import ShortcutsDialog from '~/components/shortcuts-dialog.vue'
@@ -70,4 +71,5 @@ watchEffect(() => {
     <ShortcutsDialog v-model:open="isShortcutsOpen" />
     <FileSearchDialog v-model:open="isFileSearchOpen" />
     <PreferencesDialog v-model:open="isPreferencesOpen" />
+    <Dock />
 </template>

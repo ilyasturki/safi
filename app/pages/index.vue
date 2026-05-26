@@ -3,6 +3,7 @@ import ExplorerDialog from '~/components/explorer-dialog.vue'
 import HomeButton from '~/components/home-button.vue'
 import InputValidation from '~/components/input-validation.vue'
 import KeyboardKey from '~/components/keyboard-key.vue'
+import { registerDockAction, setDockView } from '~/composables/use-dock'
 import { useFileSystemCrud } from '~/composables/use-file-system-crud'
 import { shortcuts, useShortcut } from '~/composables/use-shortcuts'
 import { getKeyDisplay } from '~/utils/key-display'
@@ -46,6 +47,10 @@ async function createFile() {
 
 useShortcut('new-file', startCreating)
 useShortcut('open-explorer', () => (isExplorerOpen.value = true))
+
+setDockView('home')
+registerDockAction('new-file', startCreating)
+registerDockAction('open-explorer', () => (isExplorerOpen.value = true))
 </script>
 
 <template>
