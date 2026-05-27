@@ -14,9 +14,13 @@ export function useOpenedFiles() {
         const current = openedAt.value
         const next: Record<string, number> = {}
         let changed = false
-        for (const path in current) {
+        for (const [path, openedTime] of Object.entries(current)) {
+            if (typeof openedTime !== 'number' || !Number.isFinite(openedTime)) {
+                changed = true
+                continue
+            }
             if (allowed.has(path)) {
-                next[path] = current[path]!
+                next[path] = openedTime
             } else {
                 changed = true
             }
