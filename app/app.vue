@@ -6,7 +6,7 @@ import FileSearchDialog from '~/components/file-search-dialog.vue'
 import PreferencesDialog from '~/components/preferences-dialog.vue'
 import ShortcutsDialog from '~/components/shortcuts-dialog.vue'
 import { usePreferences } from '~/composables/use-preferences'
-import { useShortcut } from '~/composables/use-shortcuts'
+import { loadKeyBindings, useShortcut } from '~/composables/use-shortcuts'
 
 useHead({
     titleTemplate: (titleChunk) => {
@@ -45,6 +45,7 @@ const isDark = usePreferredDark()
 
 onMounted(() => {
     void loadPreferences()
+    void loadKeyBindings()
 })
 
 watchEffect(() => {

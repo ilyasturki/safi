@@ -5,7 +5,7 @@ import InputValidation from '~/components/input-validation.vue'
 import KeyboardKey from '~/components/keyboard-key.vue'
 import { registerDockAction, setDockView } from '~/composables/use-dock'
 import { useFileSystemCrud } from '~/composables/use-file-system-crud'
-import { shortcuts, useShortcut } from '~/composables/use-shortcuts'
+import { useBinding, useShortcut } from '~/composables/use-shortcuts'
 import { getKeyDisplay } from '~/utils/key-display'
 import { navigateToEdit } from '~/utils/navigate-to-edit'
 
@@ -48,6 +48,10 @@ async function createFile() {
 useShortcut('new-file', startCreating)
 useShortcut('open-explorer', () => (isExplorerOpen.value = true))
 
+const openExplorerBinding = useBinding('open-explorer')
+const newFileBinding = useBinding('new-file')
+const showShortcutsBinding = useBinding('show-shortcuts')
+
 setDockView('home')
 registerDockAction('new-file', startCreating)
 registerDockAction('open-explorer', () => (isExplorerOpen.value = true))
@@ -83,9 +87,7 @@ registerDockAction('open-explorer', () => (isExplorerOpen.value = true))
         <main class="flex w-full max-w-md flex-col items-center">
             <HomeButton @click="isExplorerOpen = true">
                 Open Explorer
-                <KeyboardKey
-                    :keys="getKeyDisplay(shortcuts['open-explorer'])"
-                />
+                <KeyboardKey :keys="getKeyDisplay(openExplorerBinding)" />
             </HomeButton>
 
             <InputValidation
@@ -102,14 +104,12 @@ registerDockAction('open-explorer', () => (isExplorerOpen.value = true))
                 @click="startCreating"
             >
                 New File
-                <KeyboardKey :keys="getKeyDisplay(shortcuts['new-file'])" />
+                <KeyboardKey :keys="getKeyDisplay(newFileBinding)" />
             </HomeButton>
 
             <HomeButton @click="isShortcutsOpen = true">
                 Show Shortcuts
-                <KeyboardKey
-                    :keys="getKeyDisplay(shortcuts['show-shortcuts'])"
-                />
+                <KeyboardKey :keys="getKeyDisplay(showShortcutsBinding)" />
             </HomeButton>
         </main>
     </div>

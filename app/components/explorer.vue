@@ -10,7 +10,7 @@ import { registerDockAction } from '~/composables/use-dock'
 import { explorerContextKey } from '~/composables/use-explorer-context'
 import { useFileSystemCrud } from '~/composables/use-file-system-crud'
 import { useKeyboardListNavigation } from '~/composables/use-keyboard-list-navigation'
-import { shortcuts, useShortcut } from '~/composables/use-shortcuts'
+import { useBinding, useShortcut } from '~/composables/use-shortcuts'
 import { getKeyDisplay } from '~/utils/key-display'
 import { navigateToEdit } from '~/utils/navigate-to-edit'
 import CreateItemDialog from './create-item-dialog.vue'
@@ -217,6 +217,9 @@ provide(explorerContextKey, {
 useShortcut('create-document', handleCreateFile, () => props.isActive)
 useShortcut('create-folder', handleCreateFolder, () => props.isActive)
 
+const createDocumentBinding = useBinding('create-document')
+const createFolderBinding = useBinding('create-folder')
+
 registerDockAction('new-document', handleCreateFile)
 registerDockAction('new-folder', handleCreateFolder)
 </script>
@@ -278,7 +281,7 @@ registerDockAction('new-folder', handleCreateFolder)
                     class="text-base"
                 />
                 new document
-                <KeyboardKey :keys="getKeyDisplay(shortcuts['create-document'])" />
+                <KeyboardKey :keys="getKeyDisplay(createDocumentBinding)" />
             </button>
             <div class="w-px bg-zinc-300 dark:bg-zinc-700" />
             <button
@@ -293,7 +296,7 @@ registerDockAction('new-folder', handleCreateFolder)
                     class="text-base"
                 />
                 new folder
-                <KeyboardKey :keys="getKeyDisplay(shortcuts['create-folder'])" />
+                <KeyboardKey :keys="getKeyDisplay(createFolderBinding)" />
             </button>
         </div>
     </div>

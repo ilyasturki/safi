@@ -1,19 +1,26 @@
-import type { ShortcutOptions } from '~/composables/use-shortcuts'
+import type { KeyBinding } from '~~/shared/types/keybindings'
 
-export function getKeyDisplay(shortcut: ShortcutOptions): string[] {
+function formatKey(key: string): string {
+    if (key.length === 1) return key.toUpperCase()
+    return key
+}
+
+export function getKeyDisplay(binding: KeyBinding): string[] {
     const keys: string[] = []
-    const isMac = navigator.userAgent.toLowerCase().includes('mac')
+    const isMac =
+        typeof navigator !== 'undefined'
+        && navigator.userAgent.toLowerCase().includes('mac')
 
-    if (shortcut.ctrl) {
+    if (binding.ctrl) {
         keys.push(isMac ? '⌘' : 'Ctrl')
     }
-    if (shortcut.alt) {
-        keys.push('Alt')
+    if (binding.alt) {
+        keys.push(isMac ? '⌥' : 'Alt')
     }
-    if (shortcut.shift) {
-        keys.push('Shift')
+    if (binding.shift) {
+        keys.push(isMac ? '⇧' : 'Shift')
     }
-    keys.push(shortcut.key.toUpperCase())
+    keys.push(formatKey(binding.key))
 
     return keys
 }
