@@ -4,6 +4,8 @@ import { Icon } from '#components'
 import { useOpenedFiles } from '~/composables/use-opened-files'
 import { HTTP_STATUS } from '~~/shared/utils/http-status'
 
+const emit = defineEmits<{ close: [] }>()
+
 const searchQuery = ref('')
 const searchInputRef = useTemplateRef('searchInputRef')
 
@@ -79,6 +81,7 @@ function handleSearchKeyDown(event: KeyboardEvent) {
         event.preventDefault()
         links[0]?.click()
         searchQuery.value = ''
+        emit('close')
     }
 }
 
@@ -177,7 +180,10 @@ function handleResultKeyDown(event: KeyboardEvent) {
                     :to="`/edit/${file.path}`"
                     class="flex w-full flex-col gap-1 px-5 py-3 transition-colors hover:bg-zinc-50 focus:inset-ring-2 focus:outline-none active:bg-zinc-100 dark:inset-ring-zinc-200 dark:hover:bg-zinc-800 dark:active:bg-zinc-700"
                     @keydown="handleResultKeyDown"
-                    @click="searchQuery = ''"
+                    @click="
+                        searchQuery = ''
+                        emit('close')
+                    "
                 >
                     <span class="text-zinc-900 dark:text-zinc-100">
                         {{ file.name }}

@@ -35,6 +35,6 @@ function handleClose() {
         closedby="any"
         @close="handleClose"
     >
-        <FileSearch />
+        <FileSearch @close="handleClose" />
     </dialog>
 </template>
