@@ -12,6 +12,7 @@ export function useContextMenu<T, K extends string = string>() {
     let touchStartX = 0
     let touchStartY = 0
     let lastLongPressTime = 0
+    let lastLongPressItem: T | undefined
 
     function handleContextMenu(event: MouseEvent, item: T, type: K) {
         event.preventDefault()
@@ -37,11 +38,16 @@ export function useContextMenu<T, K extends string = string>() {
             isOpen.value = true
             touchTimer = undefined
             lastLongPressTime = Date.now()
+            lastLongPressItem = item
         }, TOUCH_THRESHOLD)
     }
 
-    function isWithinLongPressGrace() {
-        return Date.now() - lastLongPressTime < POST_LONG_PRESS_CLICK_GRACE
+    function isWithinLongPressGrace(item?: T) {
+        if (Date.now() - lastLongPressTime >= POST_LONG_PRESS_CLICK_GRACE) {
+            return false
+        }
+        if (item === undefined) return true
+        return lastLongPressItem === item
     }
 
     function handleTouchMove(event: TouchEvent) {

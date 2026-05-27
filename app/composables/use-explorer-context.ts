@@ -11,7 +11,7 @@ export interface ExplorerContext {
     handleFileTouchStart: (event: TouchEvent, file: FileMetadata) => void
     handleTouchMove: (event: TouchEvent) => void
     handleTouchEnd: () => void
-    isWithinLongPressGrace: () => boolean
+    isWithinLongPressGrace: (item?: FileMetadata | FolderMetadata) => boolean
     refreshNonce: Ref<number>
 }
 

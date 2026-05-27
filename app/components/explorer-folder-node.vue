@@ -54,7 +54,7 @@ async function fetchContents() {
 }
 
 async function toggle() {
-    if (ctx.isWithinLongPressGrace()) return
+    if (ctx.isWithinLongPressGrace(props.directory)) return
     if (!isExpanded.value && !folder.value) {
         await fetchContents()
         if (!folder.value) return
