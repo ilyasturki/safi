@@ -10,15 +10,10 @@ export type DockAction =
 
 type Handler = () => void
 
+const dockActions = new Map<DockAction, Handler>()
+
 export function useDockView() {
     return useState<DockView | null>('dock-view', () => null)
-}
-
-function useDockActionsState() {
-    return useState<Partial<Record<DockAction, Handler>>>(
-        'dock-actions',
-        () => ({}),
-    )
 }
 
 export function setDockView(view: DockView) {
@@ -27,17 +22,13 @@ export function setDockView(view: DockView) {
 }
 
 export function registerDockAction(key: DockAction, handler: Handler) {
-    const actions = useDockActionsState()
-    actions.value = { ...actions.value, [key]: handler }
+    dockActions.set(key, handler)
     onScopeDispose(() => {
-        if (actions.value[key] !== handler) return
-        const next = { ...actions.value }
-        delete next[key]
-        actions.value = next
+        if (dockActions.get(key) !== handler) return
+        dockActions.delete(key)
     })
 }
 
 export function triggerDockAction(key: DockAction) {
-    const actions = useDockActionsState()
-    actions.value[key]?.()
+    dockActions.get(key)?.()
 }
