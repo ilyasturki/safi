@@ -3,6 +3,7 @@ import type { FileMetadata, FolderMetadata } from '~~/shared/types/api'
 
 export interface ExplorerContext {
     handleFileClick: (path: string) => void
+    handleFolderClick: (path: string) => void
     handleKeyDown: (event: KeyboardEvent) => void
     handleFolderContextMenu: (event: MouseEvent, directory: FolderMetadata) => void
     handleFileContextMenu: (event: MouseEvent, file: FileMetadata) => void

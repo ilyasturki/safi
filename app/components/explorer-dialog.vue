@@ -3,6 +3,8 @@ import ManagedExplorer from '~/components/managed-explorer.vue'
 
 const isOpen = defineModel<boolean>('open', { default: false })
 
+withDefaults(defineProps<{ initialPath?: string }>(), { initialPath: '' })
+
 const dialogEl = useTemplateRef('dialogEl')
 
 watch(isOpen, (open) => {
@@ -25,6 +27,9 @@ function handleClose() {
         closedby="any"
         @close="handleClose"
     >
-        <ManagedExplorer :is-active="isOpen" />
+        <ManagedExplorer
+            :is-active="isOpen"
+            :initial-path="initialPath"
+        />
     </dialog>
 </template>

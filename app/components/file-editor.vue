@@ -53,6 +53,12 @@ watchDebounced(
 
 const isExplorerOpen = ref(false)
 
+const currentDirectory = computed(() => {
+    const segments = props.file.path.split('/').filter(Boolean)
+    segments.pop()
+    return segments.join('/')
+})
+
 const { enableFocusMode } = usePreferencesState()
 useShortcut('open-explorer', () => {
     isExplorerOpen.value = true
@@ -79,5 +85,8 @@ registerDockAction('open-explorer', () => {
             class="w-full max-w-[70ch]"
         />
     </div>
-    <ExplorerDialog v-model:open="isExplorerOpen" />
+    <ExplorerDialog
+        v-model:open="isExplorerOpen"
+        :initial-path="currentDirectory"
+    />
 </template>

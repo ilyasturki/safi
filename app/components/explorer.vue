@@ -185,6 +185,10 @@ function handleFileClickEmit(path: string) {
     emit('fileClick', path)
 }
 
+function handleFolderClickEmit(path: string) {
+    emit('folderClick', path)
+}
+
 function handleFolderContextMenu(event: MouseEvent, directory: FolderMetadata) {
     handleContextMenu(event, directory, 'folder')
 }
@@ -203,6 +207,7 @@ function handleFileTouchStart(event: TouchEvent, file: FileMetadata) {
 
 provide(explorerContextKey, {
     handleFileClick: handleFileClickEmit,
+    handleFolderClick: handleFolderClickEmit,
     handleKeyDown,
     handleFolderContextMenu,
     handleFileContextMenu,
