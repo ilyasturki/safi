@@ -71,6 +71,11 @@ const errorMessage = computed(() => {
     return statusMessage || 'Failed to load files'
 })
 
+function closeSearch() {
+    searchQuery.value = ''
+    emit('close')
+}
+
 function handleSearchKeyDown(event: KeyboardEvent) {
     const links = document.querySelectorAll<HTMLElement>('[data-result-link]')
 
@@ -80,8 +85,7 @@ function handleSearchKeyDown(event: KeyboardEvent) {
     } else if (event.key === 'Enter' && links.length > 0) {
         event.preventDefault()
         links[0]?.click()
-        searchQuery.value = ''
-        emit('close')
+        closeSearch()
     }
 }
 
@@ -180,10 +184,7 @@ function handleResultKeyDown(event: KeyboardEvent) {
                     :to="`/edit/${file.path}`"
                     class="flex w-full flex-col gap-1 px-5 py-3 transition-colors hover:bg-zinc-50 focus:inset-ring-2 focus:outline-none active:bg-zinc-100 dark:inset-ring-zinc-200 dark:hover:bg-zinc-800 dark:active:bg-zinc-700"
                     @keydown="handleResultKeyDown"
-                    @click="
-                        searchQuery = ''
-                        emit('close')
-                    "
+                    @click="closeSearch"
                 >
                     <span class="text-zinc-900 dark:text-zinc-100">
                         {{ file.name }}

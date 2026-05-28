@@ -1,173 +1,37 @@
-import type { ViewUpdate } from '@codemirror/view'
-import { EditorView, ViewPlugin } from '@codemirror/view'
+import { EditorView, layer, RectangleMarker } from '@codemirror/view'
 
-interface SelectionRect {
-    top: number
-    height: number
-    left: number
-    width: string
-}
-
-const selectionPlugin = ViewPlugin.fromClass(
-    class {
-        selectionLayer: HTMLElement
-        measureReq: {
-            read: () => SelectionRect[]
-            write: (rects: SelectionRect[]) => void
-        }
-
-        constructor(view: EditorView) {
-            this.selectionLayer = document.createElement('div')
-            this.selectionLayer.className = 'cm-minimal-selectionLayer'
-            view.scrollDOM.append(this.selectionLayer)
-
-            this.measureReq = {
-                read: () => this.measureSelections(view),
-                write: (rects) => this.applySelections(rects),
-            }
-
-            view.requestMeasure(this.measureReq)
-        }
-
-        update(update: ViewUpdate) {
-            if (
-                update.selectionSet
-                || update.docChanged
-                || update.viewportChanged
-                || update.geometryChanged
-            ) {
-                this.measureReq = {
-                    read: () => this.measureSelections(update.view),
-                    write: (rects) => this.applySelections(rects),
-                }
-                update.view.requestMeasure(this.measureReq)
-            }
-        }
-
-        destroy() {
-            this.selectionLayer.remove()
-        }
-
-        measureSelections(view: EditorView): SelectionRect[] {
-            if (!view.hasFocus) return []
-
-            const rects: SelectionRect[] = []
-            const { state, scrollDOM, contentDOM } = view
-
-            const containerRect = scrollDOM.getBoundingClientRect()
-            const lineHeight = Number.parseFloat(
-                getComputedStyle(contentDOM).lineHeight,
-            )
-
-            for (const range of state.selection.ranges) {
-                if (range.empty) continue
-
-                const { from, to } = range
-
-                let pos = from
-                while (pos <= to) {
-                    const block = view.lineBlockAt(pos)
-
-                    const selStart = Math.max(from, block.from)
-                    const selEnd = Math.min(to, block.to)
-
-                    const blockContent = state.doc.sliceString(
-                        block.from,
-                        block.to,
-                    )
-                    const isEmptyBlock = blockContent.length === 0
-
-                    if (isEmptyBlock) {
-                        const coords = view.coordsAtPos(selStart)
-                        if (coords) {
-                            rects.push({
-                                top: coords.top - containerRect.top,
-                                height: lineHeight,
-                                left: coords.left - containerRect.left,
-                                width: '1ch',
-                            })
-                        }
-                    } else {
-                        const segments: { start: number; end: number }[] = []
-                        let segmentStart = selStart
-                        let lastCoords = view.coordsAtPos(selStart)
-
-                        if (lastCoords) {
-                            for (
-                                let checkPos = selStart + 1;
-                                checkPos <= selEnd;
-                                checkPos++
-                            ) {
-                                const coords = view.coordsAtPos(checkPos)
-                                if (!coords) continue
-
-                                if (Math.abs(coords.top - lastCoords.top) > 2) {
-                                    segments.push({
-                                        start: segmentStart,
-                                        end: checkPos - 1,
-                                    })
-                                    segmentStart = checkPos
-                                    lastCoords = coords
-                                }
-                            }
-
-                            segments.push({ start: segmentStart, end: selEnd })
-
-                            for (const segment of segments) {
-                                const startCoords = view.coordsAtPos(
-                                    segment.start,
-                                )
-                                const endCoords = view.coordsAtPos(segment.end)
-
-                                if (startCoords && endCoords) {
-                                    rects.push({
-                                        top:
-                                            startCoords.top - containerRect.top,
-                                        height: lineHeight,
-                                        left:
-                                            startCoords.left
-                                            - containerRect.left,
-                                        width: `${endCoords.right - startCoords.left}px`,
-                                    })
-                                }
-                            }
-                        }
-                    }
-
-                    pos = block.to + 1
-                }
-            }
-
-            return rects
-        }
-
-        applySelections(rects: SelectionRect[]) {
-            this.selectionLayer.innerHTML = ''
-
-            for (const rectData of rects) {
-                const rect = document.createElement('div')
-                rect.className = 'cm-minimal-selection'
-                rect.style.top = `${rectData.top}px`
-                rect.style.height = `${rectData.height}px`
-                rect.style.left = `${rectData.left}px`
-                rect.style.width = rectData.width
-                this.selectionLayer.append(rect)
-            }
-        }
+const selectionLayer = layer({
+    above: false,
+    class: 'cm-minimal-selectionLayer',
+    update(update) {
+        return (
+            update.selectionSet
+            || update.docChanged
+            || update.viewportChanged
+            || update.geometryChanged
+            || update.focusChanged
+        )
     },
-)
+    markers(view) {
+        if (!view.hasFocus) return []
+
+        const markers: RectangleMarker[] = []
+        for (const range of view.state.selection.ranges) {
+            if (range.empty) continue
+            markers.push(
+                ...RectangleMarker.forRange(view, 'cm-minimal-selection', range),
+            )
+        }
+        return markers
+    },
+})
 
 const baseSelectionTheme = EditorView.baseTheme({
     '.cm-minimal-selectionLayer': {
-        position: 'absolute',
-        top: '0',
-        left: '0',
-        pointerEvents: 'none',
         zIndex: '-1',
     },
     '.cm-minimal-selection': {
         position: 'absolute',
-        minHeight: '100%',
         backgroundColor: 'var(--safi-primary-selection)',
     },
     '.cm-content ::selection': {
@@ -178,4 +42,4 @@ const baseSelectionTheme = EditorView.baseTheme({
     },
 })
 
-export const selectionExtension = [selectionPlugin, baseSelectionTheme]
+export const selectionExtension = [selectionLayer, baseSelectionTheme]
