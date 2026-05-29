@@ -1,14 +1,16 @@
 import { rm } from 'node:fs/promises'
 
 import { throwFsError } from '~~/server/utils/errors'
+import { getVaultContext } from '~~/server/utils/vaults'
 import {
     decodeRouterParam,
-    isWithinWorkspace,
+    isWithinVault,
     resolvePath,
 } from '~~/server/utils/workspace'
 
 export default defineEventHandler(async (event) => {
     try {
+        const vault = getVaultContext(event)
         const path = decodeRouterParam(event, 'path')
 
         if (!path) {
@@ -18,9 +20,9 @@ export default defineEventHandler(async (event) => {
             })
         }
 
-        const absolutePath = resolvePath(path)
+        const absolutePath = resolvePath(vault.path, path)
 
-        if (!isWithinWorkspace(absolutePath)) {
+        if (!isWithinVault(vault.path, absolutePath)) {
             throw createError({
                 statusCode: 403,
                 statusMessage: 'Access denied',

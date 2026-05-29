@@ -21,6 +21,11 @@ export function setDockView(view: DockView) {
     state.value = view
 }
 
+export function clearDockView() {
+    const state = useDockView()
+    state.value = null
+}
+
 export function registerDockAction(key: DockAction, handler: Handler) {
     const stack = dockActions.get(key) ?? []
     stack.push(handler)

@@ -5,6 +5,7 @@ import Dock from '~/components/dock.vue'
 import FileSearchDialog from '~/components/file-search-dialog.vue'
 import PreferencesDialog from '~/components/preferences-dialog.vue'
 import ShortcutsDialog from '~/components/shortcuts-dialog.vue'
+import VaultPickerDialog from '~/components/vault-picker-dialog.vue'
 import { applyVimUserBindings } from '~/lib/editor/extensions/editor-actions'
 import { usePreferences } from '~/composables/use-preferences'
 import {
@@ -32,6 +33,7 @@ useHead({
 const isShortcutsOpen = useState('isShortcutsOpen', () => false)
 const isFileSearchOpen = useState('isFileSearchOpen', () => false)
 const isPreferencesOpen = useState('isPreferencesOpen', () => false)
+const isVaultPickerOpen = useState('isVaultPickerOpen', () => false)
 
 useShortcut('show-shortcuts', () => {
     isShortcutsOpen.value = !isShortcutsOpen.value
@@ -97,5 +99,6 @@ watchEffect(() => {
     <ShortcutsDialog v-model:open="isShortcutsOpen" />
     <FileSearchDialog v-model:open="isFileSearchOpen" />
     <PreferencesDialog v-model:open="isPreferencesOpen" />
+    <VaultPickerDialog v-model:open="isVaultPickerOpen" />
     <Dock />
 </template>

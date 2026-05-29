@@ -1,18 +1,14 @@
+import { rename } from 'node:fs/promises'
 import path from 'node:path'
 
 import { throwFsError } from '~~/server/utils/errors'
-import {
-    copyFolderRecursive,
-    generateUniqueName,
-} from '~~/server/utils/file-operations'
-import {
-    getWorkspacePath,
-    isWithinWorkspace,
-    resolvePath,
-} from '~~/server/utils/workspace'
+import { generateUniqueName } from '~~/server/utils/file-operations'
+import { getVaultContext } from '~~/server/utils/vaults'
+import { isWithinVault, resolvePath } from '~~/server/utils/workspace'
 
 export default defineEventHandler(async (event) => {
     try {
+        const vault = getVaultContext(event)
         const body = await readBody<{
             sourcePath: string
             destinationPath: string
@@ -40,17 +36,23 @@ export default defineEventHandler(async (event) => {
             })
         }
 
-        const sourceAbsolutePath = resolvePath(body.sourcePath.trim())
-        const destAbsolutePath = resolvePath(body.destinationPath.trim())
+        const sourceAbsolutePath = resolvePath(
+            vault.path,
+            body.sourcePath.trim(),
+        )
+        const destAbsolutePath = resolvePath(
+            vault.path,
+            body.destinationPath.trim(),
+        )
 
-        if (!isWithinWorkspace(sourceAbsolutePath)) {
+        if (!isWithinVault(vault.path, sourceAbsolutePath)) {
             throw createError({
                 statusCode: 403,
                 statusMessage: 'Source path access denied',
             })
         }
 
-        if (!isWithinWorkspace(destAbsolutePath)) {
+        if (!isWithinVault(vault.path, destAbsolutePath)) {
             throw createError({
                 statusCode: 403,
                 statusMessage: 'Destination path access denied',
@@ -65,10 +67,9 @@ export default defineEventHandler(async (event) => {
         )
         const finalDestPath = path.join(destDir, uniqueDestFolderName)
 
-        await copyFolderRecursive(sourceAbsolutePath, finalDestPath)
+        await rename(sourceAbsolutePath, finalDestPath)
 
-        const workspacePath = getWorkspacePath()
-        const finalRelativePath = path.relative(workspacePath, finalDestPath)
+        const finalRelativePath = path.relative(vault.path, finalDestPath)
 
         return {
             success: true,
@@ -76,7 +77,7 @@ export default defineEventHandler(async (event) => {
             destinationPath: finalRelativePath,
         }
     } catch (error) {
-        console.error('Error copying folder:', error)
-        throwFsError(error, 'Failed to copy folder')
+        console.error('Error moving folder:', error)
+        throwFsError(error, 'Failed to move folder')
     }
 })

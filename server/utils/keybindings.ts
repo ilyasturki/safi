@@ -9,14 +9,12 @@ import {
     sanitizeKeyBindingsFile,
     sanitizePartialKeyBindingsFile,
 } from '~~/shared/utils/keybindings'
-import { getWorkspacePath } from '~~/server/utils/workspace'
+import { getConfigPath } from '~~/server/utils/vaults'
 
-const KEYBINDINGS_DIR = '.safi'
 const KEYBINDINGS_FILE = 'keybindings.json'
 
 function getKeybindingsPath(): { dir: string; file: string } {
-    const workspacePath = getWorkspacePath()
-    const dir = path.join(workspacePath, KEYBINDINGS_DIR)
+    const dir = getConfigPath()
     const file = path.join(dir, KEYBINDINGS_FILE)
     return { dir, file }
 }

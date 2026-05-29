@@ -11,11 +11,9 @@ export default defineNuxtConfig({
         },
     },
 
-    // runtimeConfig: {
-    //     workspacePath: process.env.NUXT_WORKSPACE_PATH,
-    // },
     runtimeConfig: {
-        workspacePath: '',
+        vaultsPath: '',
+        configPath: '',
         mistralApiKey: '',
     },
 

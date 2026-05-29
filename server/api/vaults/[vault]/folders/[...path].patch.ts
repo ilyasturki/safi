@@ -2,22 +2,23 @@ import { rename } from 'node:fs/promises'
 import path from 'node:path'
 
 import { throwFsError } from '~~/server/utils/errors'
+import { getVaultContext } from '~~/server/utils/vaults'
 import {
     decodeRouterParam,
-    getWorkspacePath,
-    isWithinWorkspace,
-    resolveFilePath,
+    isWithinVault,
+    resolvePath,
     validateNewPath,
 } from '~~/server/utils/workspace'
 
 export default defineEventHandler(async (event) => {
     try {
-        const filePath = decodeRouterParam(event, 'path')
+        const vault = getVaultContext(event)
+        const folderPath = decodeRouterParam(event, 'path')
 
-        if (!filePath) {
+        if (!folderPath) {
             throw createError({
                 statusCode: 400,
-                statusMessage: 'File path is required',
+                statusMessage: 'Folder path is required',
             })
         }
 
@@ -30,9 +31,9 @@ export default defineEventHandler(async (event) => {
             })
         }
 
-        const oldAbsolutePath = resolveFilePath(filePath)
+        const oldAbsolutePath = resolvePath(vault.path, folderPath)
 
-        if (!isWithinWorkspace(oldAbsolutePath)) {
+        if (!isWithinVault(vault.path, oldAbsolutePath)) {
             throw createError({
                 statusCode: 403,
                 statusMessage: 'Access denied',
@@ -40,28 +41,22 @@ export default defineEventHandler(async (event) => {
         }
 
         const newName = body.newName.trim()
-        const newNameWithExtension =
-            newName.endsWith('.md') ? newName : `${newName}.md`
-
         const directory = path.dirname(oldAbsolutePath)
-        const newAbsolutePath = path.join(directory, newNameWithExtension)
+        const newAbsolutePath = path.join(directory, newName)
 
-        await validateNewPath(newAbsolutePath)
+        await validateNewPath(vault.path, newAbsolutePath)
 
         await rename(oldAbsolutePath, newAbsolutePath)
 
-        const workspacePath = getWorkspacePath()
-        const newRelativePath = path
-            .relative(workspacePath, newAbsolutePath)
-            .replace(/\.md$/iu, '')
+        const newRelativePath = path.relative(vault.path, newAbsolutePath)
 
         return {
             success: true,
-            oldPath: filePath,
+            oldPath: folderPath,
             newPath: newRelativePath,
         }
     } catch (error) {
-        console.error('Error renaming file:', error)
-        throwFsError(error, 'Failed to rename file')
+        console.error('Error renaming folder:', error)
+        throwFsError(error, 'Failed to rename folder')
     }
 })

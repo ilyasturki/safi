@@ -2,16 +2,18 @@ import { constants } from 'node:fs'
 import { access, readFile } from 'node:fs/promises'
 
 import type { FileResponse } from '~~/shared/types/api'
+import { getVaultContext } from '~~/server/utils/vaults'
 import { listDirectory, resolveFilePath } from '~~/server/utils/workspace'
 
 export default defineEventHandler(
     async (event): Promise<FileResponse | undefined> => {
+        const vault = getVaultContext(event)
         const query = getQuery(event)
         const pathParam =
             typeof query.path === 'string' ? query.path : undefined
 
         if (pathParam) {
-            const absolutePath = resolveFilePath(pathParam)
+            const absolutePath = resolveFilePath(vault.path, pathParam)
 
             try {
                 await access(absolutePath, constants.R_OK)
@@ -26,12 +28,12 @@ export default defineEventHandler(
             }
         }
 
-        const { files } = await listDirectory('')
+        const { files } = await listDirectory(vault.path, '')
 
         if (files.length === 0) {
             throw createError({
                 statusCode: 404,
-                statusMessage: 'No markdown files found in workspace',
+                statusMessage: 'No markdown files found in vault',
             })
         }
 
@@ -40,7 +42,7 @@ export default defineEventHandler(
             return undefined
         }
 
-        const absolutePath = resolveFilePath(firstFile.path)
+        const absolutePath = resolveFilePath(vault.path, firstFile.path)
 
         try {
             await access(absolutePath, constants.R_OK)

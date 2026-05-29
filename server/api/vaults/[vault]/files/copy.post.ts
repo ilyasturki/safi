@@ -1,17 +1,20 @@
-import { rename } from 'node:fs/promises'
 import path from 'node:path'
 
 import { throwFsError } from '~~/server/utils/errors'
-import { generateUniqueName } from '~~/server/utils/file-operations'
+import {
+    copyFileWithContent,
+    generateUniqueName,
+} from '~~/server/utils/file-operations'
+import { getVaultContext } from '~~/server/utils/vaults'
 import {
     ensureDirectoryExists,
-    getWorkspacePath,
-    isWithinWorkspace,
+    isWithinVault,
     resolveFilePath,
 } from '~~/server/utils/workspace'
 
 export default defineEventHandler(async (event) => {
     try {
+        const vault = getVaultContext(event)
         const body = await readBody<{
             sourcePath: string
             destinationPath: string
@@ -39,17 +42,22 @@ export default defineEventHandler(async (event) => {
             })
         }
 
-        const sourceAbsolutePath = resolveFilePath(body.sourcePath.trim())
-        const destAbsolutePath = resolveFilePath(body.destinationPath.trim())
+        const sourceAbsolutePath = resolveFilePath(
+            vault.path,
+            body.sourcePath.trim(),
+        )
+        const destAbsolutePath = resolveFilePath(
+            vault.path,
+            body.destinationPath.trim(),
+        )
 
-        if (!isWithinWorkspace(sourceAbsolutePath)) {
+        if (!isWithinVault(vault.path, sourceAbsolutePath)) {
             throw createError({
                 statusCode: 403,
                 statusMessage: 'Source path access denied',
             })
         }
-
-        if (!isWithinWorkspace(destAbsolutePath)) {
+        if (!isWithinVault(vault.path, destAbsolutePath)) {
             throw createError({
                 statusCode: 403,
                 statusMessage: 'Destination path access denied',
@@ -65,11 +73,10 @@ export default defineEventHandler(async (event) => {
         const finalDestPath = path.join(destDir, uniqueDestFileName)
 
         await ensureDirectoryExists(finalDestPath)
-        await rename(sourceAbsolutePath, finalDestPath)
+        await copyFileWithContent(sourceAbsolutePath, finalDestPath)
 
-        const workspacePath = getWorkspacePath()
         const finalRelativePath = path
-            .relative(workspacePath, finalDestPath)
+            .relative(vault.path, finalDestPath)
             .replace(/\.md$/iu, '')
 
         return {
@@ -78,7 +85,7 @@ export default defineEventHandler(async (event) => {
             destinationPath: finalRelativePath,
         }
     } catch (error) {
-        console.error('Error moving file:', error)
-        throwFsError(error, 'Failed to move file')
+        console.error('Error copying file:', error)
+        throwFsError(error, 'Failed to copy file')
     }
 })

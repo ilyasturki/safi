@@ -2,6 +2,7 @@ import { writeFile } from 'node:fs/promises'
 
 import type { FileRequest } from '~~/shared/types/api'
 import { throwFsError } from '~~/server/utils/errors'
+import { getVaultContext } from '~~/server/utils/vaults'
 import {
     decodeRouterParam,
     ensureDirectoryExists,
@@ -11,6 +12,7 @@ import {
 
 export default defineEventHandler(async (event) => {
     try {
+        const vault = getVaultContext(event)
         const path = decodeRouterParam(event, 'path')
 
         if (!path) {
@@ -23,9 +25,9 @@ export default defineEventHandler(async (event) => {
         const body = await readBody<FileRequest>(event)
         const content = body?.content ?? ''
 
-        const absolutePath = resolveFilePath(path)
+        const absolutePath = resolveFilePath(vault.path, path)
 
-        await validateNewPath(absolutePath)
+        await validateNewPath(vault.path, absolutePath)
         await ensureDirectoryExists(absolutePath)
         await writeFile(absolutePath, content, 'utf8')
 

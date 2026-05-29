@@ -4,12 +4,15 @@ import { watchDebounced } from '@vueuse/core'
 import type { FileResponse } from '~~/shared/types/api'
 import Editor from '~/components/editor.vue'
 import ExplorerDialog from '~/components/explorer-dialog.vue'
+import { useActiveVault } from '~/composables/use-active-vault'
 import { registerDockAction } from '~/composables/use-dock'
 import { useLastEditedFile } from '~/composables/use-last-edited-file'
 import { useOpenedFiles } from '~/composables/use-opened-files'
 import { usePreferences } from '~/composables/use-preferences'
 import { usePreferencesState } from '~/composables/use-preferences-state'
 import { useShortcut } from '~/composables/use-shortcuts'
+
+const { apiBase } = useActiveVault()
 
 const props = defineProps<{
     file: FileResponse
@@ -44,10 +47,13 @@ watchDebounced(
     content,
     async (newContent) => {
         const { path } = props.file
-        await $fetch(`/api/files/${path as ':path'}`, {
-            method: 'PUT',
-            body: { content: newContent },
-        })
+        await $fetch(
+            `${apiBase.value}/files/${path}` as `/api/vaults/:vault/files/:path`,
+            {
+                method: 'PUT',
+                body: { content: newContent },
+            },
+        )
         saveLastEditedFile(path)
     },
     { debounce: DEBOUNCE_DELAY },

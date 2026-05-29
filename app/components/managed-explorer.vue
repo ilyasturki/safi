@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import type { FolderResponse } from '~~/shared/types/api'
 import Explorer from '~/components/explorer.vue'
+import { useActiveVault } from '~/composables/use-active-vault'
 import { navigateToEdit } from '~/utils/navigate-to-edit'
 
 const props = withDefaults(
     defineProps<{ isActive?: boolean; initialPath?: string }>(),
     { isActive: true, initialPath: '' },
 )
+
+const { apiBase } = useActiveVault()
 
 const currentPath = ref(props.initialPath)
 
@@ -23,7 +26,7 @@ const { data: folder, refresh } = await useFetch<FolderResponse>(
             .split('/')
             .map(encodeURIComponent)
             .join('/')
-        return `/api/folders/${encoded}`
+        return `${apiBase.value}/folders/${encoded}`
     },
     {
         lazy: true,

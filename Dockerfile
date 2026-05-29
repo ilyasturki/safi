@@ -34,9 +34,10 @@ COPY --from=build /app/.output /app
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
-RUN mkdir -p /app/workspace
+RUN mkdir -p /app/vaults /app/config
 
-ENV NUXT_WORKSPACE_PATH=/app/workspace
+ENV NUXT_VAULTS_PATH=/app/vaults
+ENV NUXT_CONFIG_PATH=/app/config
 ENV PUID=1000
 ENV PGID=1000
 

@@ -1,9 +1,10 @@
-import { useLocalStorage } from '@vueuse/core'
-
-const STORAGE_KEY = 'safi:opened-files'
+import { useVaultStorage } from '~/composables/use-vault-storage'
 
 export function useOpenedFiles() {
-    const openedAt = useLocalStorage<Record<string, number>>(STORAGE_KEY, {})
+    const openedAt = useVaultStorage<Record<string, number>>(
+        'opened-files',
+        {},
+    )
 
     const markFileOpened = (filePath: string): void => {
         openedAt.value = { ...openedAt.value, [filePath]: Date.now() }

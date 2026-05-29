@@ -6,13 +6,16 @@ services:
             - '3000:3000'
         environment:
             # Match these to your host user (run `id` to find them).
-            # Files created in ./workspace will be owned by this user.
+            # Files created under ./vaults will be owned by this user.
             - PUID=1000
             - PGID=1000
             # Server configuration
             - HOST=0.0.0.0
             - PORT=3000
         volumes:
-            # Mount local directory to persist markdown files
-            # Change './workspace' to your desired local path
-            - ./workspace:/app/workspace
+            # Each top-level subfolder of ./vaults is auto-discovered as a
+            # separate vault. `.obsidian/` directories inside vaults are
+            # preserved untouched for Obsidian compatibility.
+            - ./vaults:/app/vaults
+            # Global preferences and keybindings (shared across all vaults).
+            - ./config:/app/config

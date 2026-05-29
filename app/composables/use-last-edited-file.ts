@@ -1,10 +1,8 @@
-import { useLocalStorage } from '@vueuse/core'
-
-const STORAGE_KEY = 'safi:last-edited-file'
+import { useVaultStorage } from '~/composables/use-vault-storage'
 
 export function useLastEditedFile() {
-    const lastEditedFilePath = useLocalStorage<string | undefined>(
-        STORAGE_KEY,
+    const lastEditedFilePath = useVaultStorage<string | undefined>(
+        'last-edited-file',
         undefined,
     )
 

@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import type { FileResponse } from '~~/shared/types/api'
+import { useActiveVault } from '~/composables/use-active-vault'
 import { useLastEditedFile } from '~/composables/use-last-edited-file'
 import { navigateToEdit } from '~/utils/navigate-to-edit'
 
+const { apiBase } = useActiveVault()
 const { lastEditedFilePath } = useLastEditedFile()
 const { data: lastEditedFile } = await useFetch<FileResponse>(
-    '/api/files/last-edited',
+    () => `${apiBase.value}/files/last-edited`,
     {
         query: {
-            path: lastEditedFilePath.value,
+            path: lastEditedFilePath,
         },
     },
 )

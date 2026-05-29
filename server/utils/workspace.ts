@@ -10,21 +10,9 @@ export function decodeRouterParam(event: H3Event, name: string): string {
     return decodeURIComponent(param)
 }
 
-export function getWorkspacePath(): string {
-    const { workspacePath } = useRuntimeConfig()
-    if (!workspacePath) {
-        throw createError({
-            statusCode: 500,
-            statusMessage:
-                'NUXT_WORKSPACE_PATH environment variable is not set. Please configure it to point to your markdown files directory.',
-        })
-    }
-    return path.resolve(workspacePath)
-}
-
-export function isWithinWorkspace(absolutePath: string): boolean {
-    const workspacePath = getWorkspacePath()
-    const relativePath = path.relative(workspacePath, absolutePath)
+export function isWithinVault(vaultPath: string, absolutePath: string): boolean {
+    const root = path.resolve(vaultPath)
+    const relativePath = path.relative(root, absolutePath)
 
     return (
         !relativePath.startsWith('..')
@@ -46,17 +34,20 @@ export async function ensureDirectoryExists(filePath: string): Promise<void> {
     }
 }
 
-export function resolvePath(relativePath: string): string {
-    const workspacePath = getWorkspacePath()
+export function resolvePath(vaultPath: string, relativePath: string): string {
+    const root = path.resolve(vaultPath)
     const normalizedPath = relativePath.replace(/^\/+/u, '')
-    return path.resolve(path.join(workspacePath, normalizedPath))
+    return path.resolve(path.join(root, normalizedPath))
 }
 
-export function resolveFilePath(relativePath: string): string {
+export function resolveFilePath(
+    vaultPath: string,
+    relativePath: string,
+): string {
     const pathWithExtension =
         relativePath.endsWith('.md') ? relativePath : `${relativePath}.md`
 
-    const absolutePath = resolvePath(pathWithExtension)
+    const absolutePath = resolvePath(vaultPath, pathWithExtension)
 
     if (!isMarkdownFile(absolutePath)) {
         throw createError({
@@ -89,10 +80,11 @@ export function getFileMetadata(
 }
 
 export async function listDirectory(
+    vaultPath: string,
     relativePath: string,
 ): Promise<{ files: FileMetadata[]; directories: FolderMetadata[] }> {
-    const absolutePath = resolvePath(relativePath)
-    const workspacePath = getWorkspacePath()
+    const root = path.resolve(vaultPath)
+    const absolutePath = resolvePath(root, relativePath)
 
     try {
         await access(absolutePath, constants.R_OK)
@@ -112,7 +104,7 @@ export async function listDirectory(
             .map(async (entry): Promise<FileMetadata | undefined> => {
                 const entryAbsolutePath = path.join(absolutePath, entry.name)
                 const entryRelativePath = path.relative(
-                    workspacePath,
+                    root,
                     entryAbsolutePath,
                 )
 
@@ -143,10 +135,11 @@ export async function listDirectory(
 }
 
 export async function listAllFilesRecursive(
+    vaultPath: string,
     relativePath = '',
 ): Promise<FileMetadata[]> {
-    const absolutePath = resolvePath(relativePath)
-    const workspacePath = getWorkspacePath()
+    const root = path.resolve(vaultPath)
+    const absolutePath = resolvePath(root, relativePath)
     const allFiles: FileMetadata[] = []
 
     try {
@@ -166,12 +159,12 @@ export async function listAllFilesRecursive(
             .map(async (entry): Promise<FileMetadata[]> => {
                 const entryAbsolutePath = path.join(absolutePath, entry.name)
                 const entryRelativePath = path.relative(
-                    workspacePath,
+                    root,
                     entryAbsolutePath,
                 )
 
                 if (entry.isDirectory()) {
-                    return listAllFilesRecursive(entryRelativePath)
+                    return listAllFilesRecursive(root, entryRelativePath)
                 }
                 if (entry.isFile() && isMarkdownFile(entry.name)) {
                     const stats = await stat(entryAbsolutePath)
@@ -196,11 +189,14 @@ export async function listAllFilesRecursive(
     return allFiles
 }
 
-export async function validateNewPath(newAbsolutePath: string): Promise<void> {
-    if (!isWithinWorkspace(newAbsolutePath)) {
+export async function validateNewPath(
+    vaultPath: string,
+    newAbsolutePath: string,
+): Promise<void> {
+    if (!isWithinVault(vaultPath, newAbsolutePath)) {
         throw createError({
             statusCode: 400,
-            statusMessage: 'Path must be within workspace',
+            statusMessage: 'Path must be within vault',
         })
     }
 

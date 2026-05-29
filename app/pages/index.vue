@@ -1,60 +1,34 @@
 <script setup lang="ts">
-import ExplorerDialog from '~/components/explorer-dialog.vue'
+import { Icon } from '#components'
+
 import HomeButton from '~/components/home-button.vue'
-import InputValidation from '~/components/input-validation.vue'
-import KeyboardKey from '~/components/keyboard-key.vue'
-import { registerDockAction, setDockView } from '~/composables/use-dock'
-import { useFileSystemCrud } from '~/composables/use-file-system-crud'
-import { useBinding, useShortcut } from '~/composables/use-shortcuts'
-import { getKeyDisplay } from '~/utils/key-display'
-import { navigateToEdit } from '~/utils/navigate-to-edit'
+import { useActiveVault, useStoredActiveVault } from '~/composables/use-active-vault'
+import { clearDockView } from '~/composables/use-dock'
+import { useVaults } from '~/composables/use-vaults'
 
-const { createFile: createFileApi } = useFileSystemCrud()
+const { vaults, isLoaded, load } = useVaults()
+const { switchTo } = useActiveVault()
+const stored = useStoredActiveVault()
 
-const isShortcutsOpen = useState('isShortcutsOpen', () => false)
-const isExplorerOpen = ref(false)
+clearDockView()
 
-const isCreatingFile = ref(false)
-const newFileName = ref('')
-const createFileContainer = useTemplateRef('createFileContainer')
+await load()
 
-function startCreating() {
-    isCreatingFile.value = true
-    newFileName.value = ''
-    nextTick(() => {
-        createFileContainer.value?.focus()
-    })
-}
+const hasVaults = computed(() => vaults.value.length > 0)
 
-function cancelCreating() {
-    isCreatingFile.value = false
-    newFileName.value = ''
-}
+onMounted(async () => {
+    if (!isLoaded.value) await load()
+    if (vaults.value.length === 0) return
 
-async function createFile() {
-    const trimmedName = newFileName.value.trim()
-    if (!trimmedName) {
-        return
+    const lastUsed = stored.value
+    if (lastUsed && vaults.value.some((v) => v.id === lastUsed)) {
+        await switchTo(lastUsed)
     }
+})
 
-    const fileName = `${trimmedName}.md` as const
-    await createFileApi(fileName, '')
-
-    cancelCreating()
-
-    await navigateToEdit(fileName)
+async function handlePick(vaultId: string) {
+    await switchTo(vaultId)
 }
-
-useShortcut('new-file', startCreating)
-useShortcut('open-explorer', () => (isExplorerOpen.value = true))
-
-const openExplorerBinding = useBinding('open-explorer')
-const newFileBinding = useBinding('new-file')
-const showShortcutsBinding = useBinding('show-shortcuts')
-
-setDockView('home')
-registerDockAction('new-file', startCreating)
-registerDockAction('open-explorer', () => (isExplorerOpen.value = true))
 </script>
 
 <template>
@@ -70,49 +44,43 @@ registerDockAction('open-explorer', () => (isExplorerOpen.value = true))
                 />
                 Safi
             </h1>
-            <!-- <p class="text-sm text-zinc-600 sm:text-base dark:text-zinc-400">
-                <span> Workspace: </span>
-                <span class="ml-1">{{ workspacePath }}</span>
-            </p> -->
+            <p class="text-sm text-zinc-600 sm:text-base dark:text-zinc-400">
+                Choose a vault
+            </p>
         </header>
 
-        <!-- <div
-                class="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-900"
-            >
-                <ManagedExplorer v-model:folder-path="currentFolderPath" />
-            </div>
-
-            <LastEditedFileCard /> -->
-
         <main class="flex w-full max-w-md flex-col items-center">
-            <HomeButton @click="isExplorerOpen = true">
-                Open Explorer
-                <KeyboardKey :keys="getKeyDisplay(openExplorerBinding)" />
-            </HomeButton>
-
-            <InputValidation
-                v-if="isCreatingFile"
-                ref="createFileContainer"
-                v-model="newFileName"
-                class="flex gap-2"
-                :disable-validation="!newFileName.trim()"
-                @validate="createFile"
-                @cancel="cancelCreating"
-            />
-            <HomeButton
+            <template v-if="hasVaults">
+                <HomeButton
+                    v-for="vault in vaults"
+                    :key="vault.id"
+                    @click="handlePick(vault.id)"
+                >
+                    <span class="flex items-center gap-2">
+                        <Icon name="lucide:folder" />
+                        {{ vault.name }}
+                    </span>
+                </HomeButton>
+            </template>
+            <div
                 v-else
-                @click="startCreating"
+                class="flex flex-col items-center gap-3 px-4 py-8 text-center"
             >
-                New File
-                <KeyboardKey :keys="getKeyDisplay(newFileBinding)" />
-            </HomeButton>
-
-            <HomeButton @click="isShortcutsOpen = true">
-                Show Shortcuts
-                <KeyboardKey :keys="getKeyDisplay(showShortcutsBinding)" />
-            </HomeButton>
+                <Icon
+                    name="lucide:folder-x"
+                    class="text-3xl text-zinc-400 dark:text-zinc-600"
+                />
+                <p class="text-sm text-zinc-600 dark:text-zinc-400">
+                    No vaults found.
+                </p>
+                <p
+                    class="max-w-sm text-xs text-zinc-500 dark:text-zinc-500"
+                >
+                    Create a folder inside the directory pointed to by
+                    <code class="font-mono">NUXT_VAULTS_PATH</code>
+                    and reload.
+                </p>
+            </div>
         </main>
     </div>
-
-    <ExplorerDialog v-model:open="isExplorerOpen" />
 </template>

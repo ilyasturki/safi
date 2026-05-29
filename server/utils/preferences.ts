@@ -7,14 +7,12 @@ import {
     DEFAULT_PRIMARY_COLOR_ID,
     isPrimaryColorId,
 } from '~~/shared/utils/primary-colors'
-import { getWorkspacePath } from '~~/server/utils/workspace'
+import { getConfigPath } from '~~/server/utils/vaults'
 
-const PREFERENCES_DIR = '.safi'
 const PREFERENCES_FILE = 'preferences.json'
 
 function getPreferencesPath(): { dir: string; file: string } {
-    const workspacePath = getWorkspacePath()
-    const dir = path.join(workspacePath, PREFERENCES_DIR)
+    const dir = getConfigPath()
     const file = path.join(dir, PREFERENCES_FILE)
     return { dir, file }
 }

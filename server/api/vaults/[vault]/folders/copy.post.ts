@@ -2,18 +2,15 @@ import path from 'node:path'
 
 import { throwFsError } from '~~/server/utils/errors'
 import {
-    copyFileWithContent,
+    copyFolderRecursive,
     generateUniqueName,
 } from '~~/server/utils/file-operations'
-import {
-    ensureDirectoryExists,
-    getWorkspacePath,
-    isWithinWorkspace,
-    resolveFilePath,
-} from '~~/server/utils/workspace'
+import { getVaultContext } from '~~/server/utils/vaults'
+import { isWithinVault, resolvePath } from '~~/server/utils/workspace'
 
 export default defineEventHandler(async (event) => {
     try {
+        const vault = getVaultContext(event)
         const body = await readBody<{
             sourcePath: string
             destinationPath: string
@@ -41,16 +38,23 @@ export default defineEventHandler(async (event) => {
             })
         }
 
-        const sourceAbsolutePath = resolveFilePath(body.sourcePath.trim())
-        const destAbsolutePath = resolveFilePath(body.destinationPath.trim())
+        const sourceAbsolutePath = resolvePath(
+            vault.path,
+            body.sourcePath.trim(),
+        )
+        const destAbsolutePath = resolvePath(
+            vault.path,
+            body.destinationPath.trim(),
+        )
 
-        if (!isWithinWorkspace(sourceAbsolutePath)) {
+        if (!isWithinVault(vault.path, sourceAbsolutePath)) {
             throw createError({
                 statusCode: 403,
                 statusMessage: 'Source path access denied',
             })
         }
-        if (!isWithinWorkspace(destAbsolutePath)) {
+
+        if (!isWithinVault(vault.path, destAbsolutePath)) {
             throw createError({
                 statusCode: 403,
                 statusMessage: 'Destination path access denied',
@@ -58,20 +62,16 @@ export default defineEventHandler(async (event) => {
         }
 
         const destDir = path.dirname(destAbsolutePath)
-        const destFileName = path.basename(destAbsolutePath)
-        const uniqueDestFileName = await generateUniqueName(
+        const destFolderName = path.basename(destAbsolutePath)
+        const uniqueDestFolderName = await generateUniqueName(
             destDir,
-            destFileName,
+            destFolderName,
         )
-        const finalDestPath = path.join(destDir, uniqueDestFileName)
+        const finalDestPath = path.join(destDir, uniqueDestFolderName)
 
-        await ensureDirectoryExists(finalDestPath)
-        await copyFileWithContent(sourceAbsolutePath, finalDestPath)
+        await copyFolderRecursive(sourceAbsolutePath, finalDestPath)
 
-        const workspacePath = getWorkspacePath()
-        const finalRelativePath = path
-            .relative(workspacePath, finalDestPath)
-            .replace(/\.md$/iu, '')
+        const finalRelativePath = path.relative(vault.path, finalDestPath)
 
         return {
             success: true,
@@ -79,7 +79,7 @@ export default defineEventHandler(async (event) => {
             destinationPath: finalRelativePath,
         }
     } catch (error) {
-        console.error('Error copying file:', error)
-        throwFsError(error, 'Failed to copy file')
+        console.error('Error copying folder:', error)
+        throwFsError(error, 'Failed to copy folder')
     }
 })

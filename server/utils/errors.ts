@@ -3,7 +3,7 @@ import { HTTP_STATUS } from '~~/shared/utils/http-status'
 function buildPermissionHint(): string {
     const uid = process.getuid?.() ?? '?'
     const gid = process.getgid?.() ?? '?'
-    return `Workspace is not writable by the server process (uid=${uid}, gid=${gid}). Ensure the workspace directory is writable by this user. In Docker, set PUID and PGID env vars to match.`
+    return `Vault directory is not writable by the server process (uid=${uid}, gid=${gid}). Ensure the vault directory is writable by this user. In Docker, set PUID and PGID env vars to match.`
 }
 
 function isH3Error(error: unknown): error is { statusCode: number } {
@@ -42,7 +42,7 @@ export function throwFsError(error: unknown, defaultMessage: string): never {
         case 'EROFS':
             throw createError({
                 statusCode: HTTP_STATUS.FORBIDDEN,
-                statusMessage: 'Workspace is mounted read-only',
+                statusMessage: 'Vault is mounted read-only',
             })
         case 'ENOSPC':
             throw createError({
@@ -79,7 +79,7 @@ export function throwFsError(error: unknown, defaultMessage: string): never {
             throw createError({
                 statusCode: HTTP_STATUS.INTERNAL_SERVER_ERROR,
                 statusMessage:
-                    'Cannot move across filesystems — workspace spans multiple mounts',
+                    'Cannot move across filesystems — vault spans multiple mounts',
             })
         default:
             throw createError({

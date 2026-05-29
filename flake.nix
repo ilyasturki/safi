@@ -24,7 +24,7 @@
             ".output"
             "node_modules"
             "result"
-            "workspace"
+            "vaults"
           ]);
       };
     in
@@ -130,9 +130,21 @@
               type = lib.types.package;
               inherit (self.packages.${pkgs.stdenv.hostPlatform.system}) default;
             };
-            workspacePath = lib.mkOption {
+            vaultsPath = lib.mkOption {
               type = lib.types.str;
-              default = "/var/lib/safi/workspace";
+              default = "/var/lib/safi/vaults";
+              description = ''
+                Parent directory holding one subfolder per vault. Each
+                top-level non-hidden subfolder is auto-discovered as a vault.
+              '';
+            };
+            configPath = lib.mkOption {
+              type = lib.types.str;
+              default = "/var/lib/safi/config";
+              description = ''
+                Directory for global preferences and keybindings (shared
+                across all vaults).
+              '';
             };
             host = lib.mkOption {
               type = lib.types.str;
@@ -147,7 +159,7 @@
               default = "safi";
               description = ''
                 User to run safi as. Defaults to a dedicated system user.
-                Set to your own user if you want workspace files owned by you
+                Set to your own user if you want vault files owned by you
                 so they can be edited with other tools (e.g. nvim, vscode).
               '';
             };
@@ -175,15 +187,18 @@
               environment = {
                 HOST = cfg.host;
                 PORT = toString cfg.port;
-                NUXT_WORKSPACE_PATH = cfg.workspacePath;
+                NUXT_VAULTS_PATH = cfg.vaultsPath;
+                NUXT_CONFIG_PATH = cfg.configPath;
               };
               serviceConfig = {
-                ExecStartPre = "+${pkgs.writeShellScript "safi-init-workspace" ''
+                ExecStartPre = "+${pkgs.writeShellScript "safi-init-dirs" ''
                   # No `-p`: if a parent directory is missing, fail loudly rather
                   # than silently creating root-owned ancestors that the service
                   # user can't write to later.
-                  ${pkgs.coreutils}/bin/mkdir ${lib.escapeShellArg cfg.workspacePath} 2>/dev/null || true
-                  ${pkgs.coreutils}/bin/chown ${cfg.user}:${cfg.group} ${lib.escapeShellArg cfg.workspacePath}
+                  ${pkgs.coreutils}/bin/mkdir ${lib.escapeShellArg cfg.vaultsPath} 2>/dev/null || true
+                  ${pkgs.coreutils}/bin/chown ${cfg.user}:${cfg.group} ${lib.escapeShellArg cfg.vaultsPath}
+                  ${pkgs.coreutils}/bin/mkdir ${lib.escapeShellArg cfg.configPath} 2>/dev/null || true
+                  ${pkgs.coreutils}/bin/chown ${cfg.user}:${cfg.group} ${lib.escapeShellArg cfg.configPath}
                 ''}";
                 ExecStart = lib.getExe cfg.package;
                 Restart = "on-failure";

@@ -4,23 +4,29 @@
 
 # Safi
 
-A minimalist, self-hosted text editor for markdown files with a clean, mobile-friendly interface and file-based storage.
+A minimalist, self-hosted text editor for markdown files with a clean, mobile-friendly interface and file-based storage. Vaults are Obsidian-compatible — point Safi at a parent directory and every subfolder becomes a switchable vault.
 
 ## Features
 
 - Minimalist, distraction-free interface
-- Markdown file-based storage in the server
+- Multiple vaults (Obsidian-style) — switchable from the dock
+- Markdown file-based storage on the server
 - Shortcuts for efficient workflow
 - Focus mode for deep work
 - File Explorer with basic operations (create, delete, rename)
-- File Search
-- Light and Dark mode support
+- File search (per vault)
+- Light and dark mode
 
 ## Installation
 
 The easiest way to run Safi is using the pre-built Docker image from GitHub Container Registry.
 
-By default the container runs as uid/gid `1000:1000`, which matches the first regular user on most Linux desktops — so files in `./workspace` will be owned by you on the host and can be edited with any editor. If your host user has different ids (run `id` to check), set `PUID` and `PGID` accordingly.
+Safi expects two host directories:
+
+- **`vaults/`** — parent directory. Each top-level non-hidden subfolder is a vault. `.obsidian/` directories inside vaults are preserved untouched.
+- **`config/`** — global preferences and keybindings (shared across all vaults).
+
+By default the container runs as uid/gid `1000:1000`, which matches the first regular user on most Linux desktops — so files in `./vaults` will be owned by you on the host and can be edited with any editor. If your host user has different ids (run `id` to check), set `PUID` and `PGID` accordingly.
 
 ### Docker
 
@@ -29,9 +35,12 @@ docker run -d \
   --name safi \
   -p 3000:3000 \
   -e PUID=$(id -u) -e PGID=$(id -g) \
-  -v $(pwd)/workspace:/app/workspace \
+  -v $(pwd)/vaults:/app/vaults \
+  -v $(pwd)/config:/app/config \
   ghcr.io/ilyasturki/safi:latest
 ```
+
+Create at least one vault by making a subfolder, e.g. `./vaults/Personal/`, then visit `http://localhost:3000`.
 
 ### Docker Compose
 
@@ -45,7 +54,8 @@ services:
             - PUID=1000
             - PGID=1000
         volumes:
-            - ./workspace:/app/workspace
+            - ./vaults:/app/vaults
+            - ./config:/app/config
         restart: unless-stopped
 ```
 
@@ -54,6 +64,16 @@ Then run:
 ```bash
 docker-compose up -d
 ```
+
+### Upgrading from a single workspace
+
+Earlier versions of Safi used a single `NUXT_WORKSPACE_PATH` pointing to one directory. The new layout requires a parent directory containing one subfolder per vault:
+
+1. Rename your existing host directory so it becomes a child of a new parent: e.g. `mv ./workspace ./vaults/Personal`.
+2. Replace `-v $(pwd)/workspace:/app/workspace` with `-v $(pwd)/vaults:/app/vaults`, and add a new bind for global config: `-v $(pwd)/config:/app/config`.
+3. (Optional) Copy your old `./vaults/Personal/.safi/` to `./config/` to preserve preferences and keybindings — they now live globally instead of per-vault.
+
+`NUXT_WORKSPACE_PATH` is no longer read; use `NUXT_VAULTS_PATH` and `NUXT_CONFIG_PATH`.
 
 ### NixOS
 
@@ -75,7 +95,8 @@ Add Safi as an input to your NixOS flake:
               enable = true;
               host = "0.0.0.0";
               port = 3000;
-              workspacePath = "/var/lib/safi/workspace";
+              vaultsPath = "/var/lib/safi/vaults";
+              configPath = "/var/lib/safi/config";
             };
           }
         ];
@@ -94,16 +115,15 @@ bun run build
 bun run start
 ```
 
-If you want to change workspace path, create a `.env` file:
+Create a `.env` from the template and point it at your vaults and config dirs:
 
 ```bash
 cp .env.example .env
 ```
 
-And configure your workspace path in `.env`:
-
 ```env
-NUXT_WORKSPACE_PATH=/path/to/your/markdown/files
+NUXT_VAULTS_PATH=/path/to/your/vaults
+NUXT_CONFIG_PATH=/path/to/your/safi-config
 ```
 
 ## Contributing

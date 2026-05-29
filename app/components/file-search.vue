@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FileMetadata } from '~~/shared/types/api'
 import { Icon } from '#components'
+import { useActiveVault } from '~/composables/use-active-vault'
 import { useOpenedFiles } from '~/composables/use-opened-files'
 import { HTTP_STATUS } from '~~/shared/utils/http-status'
 
@@ -9,12 +10,14 @@ const emit = defineEmits<{ close: [] }>()
 const searchQuery = ref('')
 const searchInputRef = useTemplateRef('searchInputRef')
 
+const { id: vaultId, apiBase } = useActiveVault()
+
 const {
     data: files,
     status,
     error,
     refresh,
-} = await useFetch<FileMetadata[]>('/api/files')
+} = await useFetch<FileMetadata[]>(() => `${apiBase.value}/files`)
 
 const { openedAt, pruneOpenedFiles } = useOpenedFiles()
 
@@ -60,12 +63,12 @@ const errorMessage = computed(() => {
 
     if (
         statusCode === HTTP_STATUS.INTERNAL_SERVER_ERROR
-        && statusMessage?.includes('NUXT_WORKSPACE_PATH')
+        && statusMessage?.includes('NUXT_VAULTS_PATH')
     ) {
-        return 'Workspace not configured'
+        return 'Vaults not configured'
     }
     if (statusCode === HTTP_STATUS.FORBIDDEN) {
-        return 'Unable to access workspace'
+        return 'Unable to access vault'
     }
 
     return statusMessage || 'Failed to load files'
@@ -185,7 +188,7 @@ function handleResultKeyDown(event: KeyboardEvent) {
                     v-for="file in filteredFiles"
                     :key="file.path"
                     :data-result-link="true"
-                    :to="`/edit/${file.path}`"
+                    :to="`/v/${vaultId}/edit/${file.path}`"
                     class="flex w-full flex-col gap-1 px-5 py-3 transition-colors hover:bg-zinc-50 focus:inset-ring-2 focus:outline-none active:bg-zinc-100 dark:inset-ring-zinc-200 dark:hover:bg-zinc-800 dark:active:bg-zinc-700"
                     @keydown="handleResultKeyDown"
                     @click="closeSearch"

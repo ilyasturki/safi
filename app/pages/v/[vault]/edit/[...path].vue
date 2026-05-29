@@ -1,18 +1,22 @@
 <script setup lang="ts">
+import type { FileResponse, FolderResponse } from '~~/shared/types/api'
 import Explorer from '~/components/explorer.vue'
 import FileEditor from '~/components/file-editor.vue'
+import { useActiveVault } from '~/composables/use-active-vault'
 import { setDockView } from '~/composables/use-dock'
 import { navigateToEdit } from '~/utils/navigate-to-edit'
 
 const route = useRoute()
+const { apiBase } = useActiveVault()
+
 const entryPath = computed(() => {
     const pathParam = route.params.path
     const path = Array.isArray(pathParam) ? pathParam.join('/') : pathParam
     return path ?? ''
 })
 
-const { data: entry, refresh } = await useFetch(
-    () => `/api/entry/${entryPath.value}`,
+const { data: entry, refresh } = await useFetch<FileResponse | FolderResponse>(
+    () => `${apiBase.value}/entry/${entryPath.value}`,
 )
 
 function syncDockView() {

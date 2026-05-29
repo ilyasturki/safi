@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { FolderMetadata, FolderResponse } from '~~/shared/types/api'
+import { useActiveVault } from '~/composables/use-active-vault'
 import { explorerContextKey } from '~/composables/use-explorer-context'
 import ExplorerItem from './explorer-item.vue'
 
@@ -11,6 +12,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const { apiBase } = useActiveVault()
 
 const injectedCtx = inject(explorerContextKey)
 if (!injectedCtx) {
@@ -36,7 +39,7 @@ async function fetchContents() {
             .map(encodeURIComponent)
             .join('/')
         const response = await $fetch<FolderResponse>(
-            `/api/folders/${encoded}`,
+            `${apiBase.value}/folders/${encoded}`,
             { signal: controller.signal },
         )
         if (sequence === fetchSequence) {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import DockButton from '~/components/dock-button.vue'
+import { useActiveVault } from '~/composables/use-active-vault'
 import { triggerDockAction, useDockView } from '~/composables/use-dock'
 import { usePreferencesState } from '~/composables/use-preferences-state'
 
@@ -7,7 +8,10 @@ const view = useDockView()
 const isShortcutsOpen = useState('isShortcutsOpen', () => false)
 const isFileSearchOpen = useState('isFileSearchOpen', () => false)
 const isPreferencesOpen = useState('isPreferencesOpen', () => false)
+const isVaultPickerOpen = useState('isVaultPickerOpen', () => false)
 const { enableFocusMode } = usePreferencesState()
+const { id: vaultId } = useActiveVault()
+const homeHref = computed(() => (vaultId.value ? `/v/${vaultId.value}/` : '/'))
 </script>
 
 <template>
@@ -43,7 +47,7 @@ const { enableFocusMode } = usePreferencesState()
                 <DockButton
                     icon="lucide:house"
                     label="Home"
-                    to="/"
+                    :to="homeHref"
                 />
                 <DockButton
                     icon="lucide:file-plus"
@@ -66,7 +70,7 @@ const { enableFocusMode } = usePreferencesState()
                 <DockButton
                     icon="lucide:house"
                     label="Home"
-                    to="/"
+                    :to="homeHref"
                 />
                 <DockButton
                     icon="lucide:folder-open"
@@ -88,6 +92,11 @@ const { enableFocusMode } = usePreferencesState()
 
             <div class="mx-1 h-5 w-px bg-zinc-200 dark:bg-zinc-800" />
 
+            <DockButton
+                icon="lucide:layers"
+                label="Switch vault"
+                @click="isVaultPickerOpen = true"
+            />
             <DockButton
                 icon="lucide:settings"
                 label="Preferences"
