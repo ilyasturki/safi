@@ -38,4 +38,4 @@ Vim.mapCommand(
     {},
 )
 
-export const vimExtension = vim({ status: true })
+export const vimExtension = vim()

@@ -2,6 +2,7 @@
 import type { HTMLAttributes } from 'vue'
 
 import { useCodeMirror } from '~/composables/use-code-mirror'
+import { useEditorKeyBindings } from '~/composables/use-shortcuts'
 
 interface EditorProps {
     placeholder?: string
@@ -17,9 +18,12 @@ const props = withDefaults(defineProps<EditorProps>(), {
 
 const editorEl = useTemplateRef('editorEl')
 
+const editorKeyBindings = useEditorKeyBindings()
+
 const {
     isReady,
     isFocused,
+    vimMode,
     focus,
     blur,
     getSelection,
@@ -30,11 +34,13 @@ const {
     placeholder: props.placeholder,
     enableFocusMode: toRef(() => props.enableFocusMode),
     enableVimMode: toRef(() => props.enableVimMode),
+    editorKeyBindings,
 })
 
 defineExpose({
     isReady,
     isFocused,
+    vimMode,
     focus,
     blur,
     getSelection,

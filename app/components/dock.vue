@@ -94,8 +94,8 @@ const { enableFocusMode } = usePreferencesState()
                 @click="isPreferencesOpen = true"
             />
             <DockButton
-                icon="lucide:circle-help"
-                label="Shortcuts"
+                icon="lucide:keyboard"
+                label="Keybindings"
                 @click="isShortcutsOpen = true"
             />
         </div>

@@ -5,8 +5,13 @@ import Dock from '~/components/dock.vue'
 import FileSearchDialog from '~/components/file-search-dialog.vue'
 import PreferencesDialog from '~/components/preferences-dialog.vue'
 import ShortcutsDialog from '~/components/shortcuts-dialog.vue'
+import { applyVimUserBindings } from '~/lib/editor/extensions/editor-actions'
 import { usePreferences } from '~/composables/use-preferences'
-import { loadKeyBindings, useShortcut } from '~/composables/use-shortcuts'
+import {
+    loadKeyBindings,
+    useEditorKeyBindings,
+    useShortcut,
+} from '~/composables/use-shortcuts'
 
 useHead({
     titleTemplate: (titleChunk) => {
@@ -40,13 +45,33 @@ useShortcut('open-preferences', () => {
     isPreferencesOpen.value = !isPreferencesOpen.value
 })
 
-const { primaryColor, load: loadPreferences } = usePreferences()
+const { preferences, primaryColor, load: loadPreferences, setEnableVimMode } = usePreferences()
 const isDark = usePreferredDark()
+const editorKeyBindings = useEditorKeyBindings()
+const editorBindingsLoaded = ref(false)
+
+useShortcut('toggle-vim-mode', () => {
+    void setEnableVimMode(!preferences.value.enableVimMode)
+})
 
 onMounted(() => {
     void loadPreferences()
-    void loadKeyBindings()
+    void loadKeyBindings().finally(() => {
+        editorBindingsLoaded.value = true
+    })
 })
+
+// Vim mappings live on a global singleton — only apply once the persisted
+// bindings are in memory, otherwise the empty defaults briefly clear any
+// previously-installed user mappings.
+watch(
+    [editorKeyBindings, editorBindingsLoaded],
+    ([bindings, loaded]) => {
+        if (!loaded) return
+        applyVimUserBindings(bindings)
+    },
+    { deep: true },
+)
 
 watchEffect(() => {
     if (!import.meta.client) return

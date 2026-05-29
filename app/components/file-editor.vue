@@ -24,8 +24,9 @@ watch(
     { immediate: true },
 )
 
-const editorRef = useTemplateRef('editorRef')
+const editorRef = useTemplateRef<InstanceType<typeof Editor>>('editorRef')
 const content = ref('')
+const vimMode = computed(() => editorRef.value?.vimMode ?? 'normal')
 
 function onWrapperMousedown(event: MouseEvent) {
     editorRef.value?.focusFromGutterClick(event)
@@ -90,6 +91,13 @@ registerDockAction('open-explorer', () => {
             :enable-vim-mode
             class="w-full max-w-[70ch]"
         />
+    </div>
+    <div
+        v-if="enableVimMode"
+        aria-label="Vim mode"
+        class="pointer-events-none fixed bottom-4 left-4 z-40 rounded-lg border border-zinc-200 bg-white/95 px-2 py-1.5 font-mono text-xs tracking-wider text-zinc-700 uppercase shadow-lg backdrop-blur dark:border-zinc-800 dark:bg-zinc-900/95 dark:text-zinc-300"
+    >
+        {{ vimMode }}
     </div>
     <ExplorerDialog
         v-model:open="isExplorerOpen"

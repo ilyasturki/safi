@@ -1,23 +1,48 @@
 import type { MaybeRefOrGetter, Ref } from 'vue'
 
 import type {
+    EditorAction,
+    EditorBinding,
+    EditorKeyBindings,
     KeyBinding,
     KeyBindings,
+    KeyBindingsFile,
     ShortcutAction,
 } from '~~/shared/types/keybindings'
 import {
+    DEFAULT_EDITOR_KEYBINDINGS,
     DEFAULT_KEYBINDINGS,
+    EDITOR_ACTIONS,
+    EDITOR_ACTION_META,
     SHORTCUT_ACTIONS,
     SHORTCUT_META,
 } from '~~/shared/utils/keybindings'
 
-export type { KeyBinding, KeyBindings, ShortcutAction }
+export type {
+    EditorAction,
+    EditorBinding,
+    EditorKeyBindings,
+    KeyBinding,
+    KeyBindings,
+    ShortcutAction,
+}
 export type { ShortcutMeta, ShortcutScope } from '~~/shared/utils/keybindings'
-export { SHORTCUT_META, DEFAULT_KEYBINDINGS } from '~~/shared/utils/keybindings'
+export {
+    DEFAULT_EDITOR_KEYBINDINGS,
+    DEFAULT_KEYBINDINGS,
+    EDITOR_ACTION_META,
+    SHORTCUT_META,
+} from '~~/shared/utils/keybindings'
 
 function useKeyBindingsState(): Ref<KeyBindings> {
     return useState<KeyBindings>('keybindings', () => ({
         ...DEFAULT_KEYBINDINGS,
+    }))
+}
+
+function useEditorKeyBindingsState(): Ref<EditorKeyBindings> {
+    return useState<EditorKeyBindings>('editor-keybindings', () => ({
+        ...DEFAULT_EDITOR_KEYBINDINGS,
     }))
 }
 
@@ -37,6 +62,10 @@ export function setShortcutsPaused(value: boolean) {
 
 export function useKeyBindings(): Ref<KeyBindings> {
     return useKeyBindingsState()
+}
+
+export function useEditorKeyBindings(): Ref<EditorKeyBindings> {
+    return useEditorKeyBindingsState()
 }
 
 export function useBinding(action: ShortcutAction) {
@@ -150,10 +179,12 @@ let saveChain: Promise<unknown> = Promise.resolve()
 
 export function loadKeyBindings(): Promise<void> {
     if (loadPromise) return loadPromise
-    const state = useKeyBindingsState()
+    const shortcutsState = useKeyBindingsState()
+    const editorState = useEditorKeyBindingsState()
     const attempt = (async () => {
-        const data = await $fetch<KeyBindings>('/api/keybindings')
-        state.value = data
+        const data = await $fetch<KeyBindingsFile>('/api/keybindings')
+        shortcutsState.value = data.shortcuts
+        editorState.value = data.editor
     })()
     loadPromise = attempt.catch((error) => {
         loadPromise = undefined
@@ -163,20 +194,22 @@ export function loadKeyBindings(): Promise<void> {
 }
 
 async function putKeyBindings(
-    body: Partial<KeyBindings>,
-): Promise<KeyBindings> {
-    const state = useKeyBindingsState()
-    const saved = await $fetch<KeyBindings>('/api/keybindings', {
+    body: Partial<KeyBindingsFile>,
+): Promise<KeyBindingsFile> {
+    const shortcutsState = useKeyBindingsState()
+    const editorState = useEditorKeyBindingsState()
+    const saved = await $fetch<KeyBindingsFile>('/api/keybindings', {
         method: 'PUT',
         body,
     })
-    state.value = saved
+    shortcutsState.value = saved.shortcuts
+    editorState.value = saved.editor
     return saved
 }
 
 function enqueueSave(
-    task: () => Promise<KeyBindings>,
-): Promise<KeyBindings> {
+    task: () => Promise<KeyBindingsFile>,
+): Promise<KeyBindingsFile> {
     const next = saveChain.then(task, task)
     saveChain = next.catch(() => undefined)
     return next
@@ -185,18 +218,44 @@ function enqueueSave(
 export async function updateKeyBinding(
     action: ShortcutAction,
     binding: KeyBinding,
-): Promise<KeyBindings> {
+): Promise<KeyBindingsFile> {
     await loadKeyBindings()
-    return enqueueSave(() => putKeyBindings({ [action]: binding }))
+    return enqueueSave(() =>
+        putKeyBindings({ shortcuts: { [action]: binding } as KeyBindings }),
+    )
 }
 
-export async function resetKeyBindings(): Promise<KeyBindings> {
+export async function resetKeyBindings(): Promise<KeyBindingsFile> {
     await loadKeyBindings()
-    return enqueueSave(() => putKeyBindings({ ...DEFAULT_KEYBINDINGS }))
+    return enqueueSave(() =>
+        putKeyBindings({ shortcuts: { ...DEFAULT_KEYBINDINGS } }),
+    )
 }
 
 export async function resetKeyBinding(
     action: ShortcutAction,
-): Promise<KeyBindings> {
+): Promise<KeyBindingsFile> {
     return await updateKeyBinding(action, DEFAULT_KEYBINDINGS[action])
 }
+
+export async function updateEditorKeyBinding(
+    action: EditorAction,
+    binding: EditorBinding,
+): Promise<KeyBindingsFile> {
+    if (!(action in EDITOR_ACTION_META)) {
+        throw new Error(`Editor action not found: ${action}`)
+    }
+    await loadKeyBindings()
+    return enqueueSave(() =>
+        putKeyBindings({ editor: { [action]: binding } as EditorKeyBindings }),
+    )
+}
+
+export async function resetEditorKeyBindings(): Promise<KeyBindingsFile> {
+    await loadKeyBindings()
+    return enqueueSave(() =>
+        putKeyBindings({ editor: { ...DEFAULT_EDITOR_KEYBINDINGS } }),
+    )
+}
+
+export { EDITOR_ACTIONS }

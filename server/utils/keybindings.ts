@@ -2,11 +2,12 @@ import { constants } from 'node:fs'
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
-import type { KeyBindings } from '~~/shared/types/keybindings'
+import type { KeyBindingsFile } from '~~/shared/types/keybindings'
 import {
+    DEFAULT_EDITOR_KEYBINDINGS,
     DEFAULT_KEYBINDINGS,
-    sanitizeKeyBindings,
-    sanitizePartialKeyBindings,
+    sanitizeKeyBindingsFile,
+    sanitizePartialKeyBindingsFile,
 } from '~~/shared/utils/keybindings'
 import { getWorkspacePath } from '~~/server/utils/workspace'
 
@@ -20,28 +21,35 @@ function getKeybindingsPath(): { dir: string; file: string } {
     return { dir, file }
 }
 
-export async function readKeyBindings(): Promise<KeyBindings> {
+function emptyFile(): KeyBindingsFile {
+    return {
+        shortcuts: { ...DEFAULT_KEYBINDINGS },
+        editor: { ...DEFAULT_EDITOR_KEYBINDINGS },
+    }
+}
+
+export async function readKeyBindings(): Promise<KeyBindingsFile> {
     const { file } = getKeybindingsPath()
 
     try {
         await access(file, constants.R_OK)
     } catch {
-        return { ...DEFAULT_KEYBINDINGS }
+        return emptyFile()
     }
 
     try {
         const raw = await readFile(file, 'utf8')
         const parsed = JSON.parse(raw) as unknown
-        return sanitizeKeyBindings(parsed)
+        return sanitizeKeyBindingsFile(parsed)
     } catch {
-        return { ...DEFAULT_KEYBINDINGS }
+        return emptyFile()
     }
 }
 
 let writeChain: Promise<unknown> = Promise.resolve()
 
-export function writeKeyBindings(input: unknown): Promise<KeyBindings> {
-    const partial = sanitizePartialKeyBindings(input)
+export function writeKeyBindings(input: unknown): Promise<KeyBindingsFile> {
+    const partial = sanitizePartialKeyBindingsFile(input)
     const next = writeChain.then(
         () => performWrite(partial),
         () => performWrite(partial),
@@ -51,10 +59,13 @@ export function writeKeyBindings(input: unknown): Promise<KeyBindings> {
 }
 
 async function performWrite(
-    partial: Partial<KeyBindings>,
-): Promise<KeyBindings> {
+    partial: Partial<KeyBindingsFile>,
+): Promise<KeyBindingsFile> {
     const current = await readKeyBindings()
-    const merged: KeyBindings = { ...current, ...partial }
+    const merged: KeyBindingsFile = {
+        shortcuts: { ...current.shortcuts, ...partial.shortcuts },
+        editor: { ...current.editor, ...partial.editor },
+    }
     const { dir, file } = getKeybindingsPath()
 
     try {

@@ -1,9 +1,12 @@
 import { Compartment, EditorState } from '@codemirror/state'
 import { EditorView } from '@codemirror/view'
+import { getCM } from '@replit/codemirror-vim'
 
 import type { UseExtensionsOptions } from '~/lib/editor/extensions'
 import { useExtensions } from '~/lib/editor/extensions'
 import { createLogger, LogLevels } from '~/utils/create-logger'
+
+type VimMode = 'normal' | 'insert' | 'visual' | 'replace'
 
 const logger = createLogger({
     tag: 'use-code-mirror',
@@ -24,9 +27,38 @@ export function useCodeMirror(
 
     const isReady = ref(false)
     const isFocused = ref(false)
+    const vimMode = ref<VimMode>('normal')
 
     let editorView: EditorView | undefined
+    let vimCM: ReturnType<typeof getCM> = null
     const extensionsCompartment = new Compartment()
+
+    function handleVimModeChange(event: { mode?: string }) {
+        if (event.mode) vimMode.value = event.mode as VimMode
+    }
+
+    function detachVimListener() {
+        if (vimCM) {
+            vimCM.off('vim-mode-change', handleVimModeChange)
+            vimCM = null
+        }
+    }
+
+    function syncVimListener() {
+        if (!editorView) return
+        const cm = getCM(editorView)
+        if (cm === vimCM) return
+        detachVimListener()
+        // Vim was removed from the extension stack — reset the mode so a
+        // stale 'insert' badge doesn't survive disabling vim.
+        if (!cm) {
+            vimMode.value = 'normal'
+            return
+        }
+        vimCM = cm
+        vimMode.value = 'normal'
+        cm.on('vim-mode-change', handleVimModeChange)
+    }
 
     onMounted(() => {
         createEditor()
@@ -49,6 +81,7 @@ export function useCodeMirror(
             editorView.dispatch({
                 effects: extensionsCompartment.reconfigure(newExtensions),
             })
+            syncVimListener()
             logger.trace('Extensions reconfigured')
         }
     })
@@ -82,12 +115,14 @@ export function useCodeMirror(
 
         isReady.value = true
         isFocused.value = editorView.hasFocus
+        syncVimListener()
 
         logger.trace('CodeMirror editor created successfully')
     }
 
     function destroyEditor() {
         if (editorView) {
+            detachVimListener()
             editorView.destroy()
             editorView = undefined
             isReady.value = false
@@ -204,6 +239,7 @@ export function useCodeMirror(
         // State
         isReady: readonly(isReady),
         isFocused: readonly(isFocused),
+        vimMode: readonly(vimMode),
 
         // Editor instance (for advanced usage)
         editorView: editorViewRef,

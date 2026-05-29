@@ -2,8 +2,11 @@ import type { MaybeRef } from 'vue'
 import { unref } from 'vue'
 import { usePreferredDark } from '@vueuse/core'
 
+import type { EditorKeyBindings } from '~~/shared/types/keybindings'
+import { DEFAULT_EDITOR_KEYBINDINGS } from '~~/shared/utils/keybindings'
 import { darkTheme, lightTheme } from '~/lib/editor/theme/theme-extension'
 import { baseExtensions } from './base-extensions'
+import { createEditorActionsKeymap } from './editor-actions'
 import { focusModeExtension } from './focus-mode'
 import { headingOutdentExtension } from './heading-outdent'
 import { inlineCompletionExtension } from './inline-completion'
@@ -24,6 +27,8 @@ export interface UseExtensionsOptions {
     enableFocusMode?: MaybeRef<boolean>
     /** @default false */
     enableVimMode?: MaybeRef<boolean>
+    /** @default DEFAULT_EDITOR_KEYBINDINGS */
+    editorKeyBindings?: MaybeRef<EditorKeyBindings>
 }
 
 export function useExtensions(options: UseExtensionsOptions = {}) {
@@ -32,12 +37,14 @@ export function useExtensions(options: UseExtensionsOptions = {}) {
         enableLiveMarkers = false,
         enableFocusMode = false,
         enableVimMode = false,
+        editorKeyBindings,
     } = options
 
     const isDark = usePreferredDark()
 
     return computed(() => {
         const vimOn = unref(enableVimMode)
+        const bindings = unref(editorKeyBindings) ?? DEFAULT_EDITOR_KEYBINDINGS
         const extensions = []
 
         // Vim must come before the default keymap so its bindings win.
@@ -48,6 +55,7 @@ export function useExtensions(options: UseExtensionsOptions = {}) {
         extensions.push(
             baseExtensions,
             inlineCompletionExtension(),
+            createEditorActionsKeymap(bindings),
             createKeymapsExtension(vimOn),
             markdownExtension,
 
