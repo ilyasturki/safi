@@ -1,13 +1,19 @@
 <script setup lang="ts">
+import { useActiveVault } from '~/composables/use-active-vault'
 import FileSearch from './file-search.vue'
 
 const isOpen = defineModel<boolean>('open', { default: false })
 const dialogEl = useTemplateRef('dialogEl')
 
 const route = useRoute()
+const { apiBase } = useActiveVault()
 
 watch(isOpen, (open) => {
     if (open) {
+        if (!apiBase.value) {
+            isOpen.value = false
+            return
+        }
         dialogEl.value?.showModal()
     } else {
         dialogEl.value?.close()
@@ -35,6 +41,9 @@ function handleClose() {
         closedby="any"
         @close="handleClose"
     >
-        <FileSearch @close="handleClose" />
+        <FileSearch
+            v-if="isOpen"
+            @close="handleClose"
+        />
     </dialog>
 </template>
