@@ -6,6 +6,7 @@ import { darkTheme, lightTheme } from '~/lib/editor/theme/theme-extension'
 import { baseExtensions } from './base-extensions'
 import { focusModeExtension } from './focus-mode'
 import { headingOutdentExtension } from './heading-outdent'
+import { inlineCompletionExtension } from './inline-completion'
 import { keymapsExtension } from './keymap'
 import { liveMarkers } from './live-markers'
 import { markdownExtension } from './markdown'
@@ -34,6 +35,7 @@ export function useExtensions(options: UseExtensionsOptions = {}) {
     return computed(() => {
         const extensions = [
             baseExtensions,
+            inlineCompletionExtension(),
             keymapsExtension,
             markdownExtension,
 

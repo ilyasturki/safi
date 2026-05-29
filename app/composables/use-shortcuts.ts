@@ -68,10 +68,6 @@ function isTypingTarget(target: EventTarget | null): boolean {
     return target.isContentEditable
 }
 
-function isTypingKey(key: string): boolean {
-    return key.length === 1
-}
-
 export function useShortcut(
     action: ShortcutAction,
     callback: () => void,
@@ -95,12 +91,7 @@ export function useShortcut(
             options.ctrl === true
             || options.alt === true
             || options.shift === true
-        if (
-            !hasModifier
-            && isTypingKey(options.key)
-            && isTypingTarget(event.target)
-        )
-            return
+        if (!hasModifier && isTypingTarget(event.target)) return
 
         const matchesKey =
             event.key.toLowerCase() === options.key.toLowerCase()
@@ -160,14 +151,14 @@ let saveChain: Promise<unknown> = Promise.resolve()
 export function loadKeyBindings(): Promise<void> {
     if (loadPromise) return loadPromise
     const state = useKeyBindingsState()
-    loadPromise = (async () => {
-        try {
-            const data = await $fetch<KeyBindings>('/api/keybindings')
-            state.value = data
-        } catch (error) {
-            console.error('Failed to load keybindings:', error)
-        }
+    const attempt = (async () => {
+        const data = await $fetch<KeyBindings>('/api/keybindings')
+        state.value = data
     })()
+    loadPromise = attempt.catch((error) => {
+        loadPromise = undefined
+        throw error
+    })
     return loadPromise
 }
 

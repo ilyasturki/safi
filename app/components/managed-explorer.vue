@@ -11,14 +11,20 @@ const props = withDefaults(
 const currentPath = ref(props.initialPath)
 
 watch(
-    () => props.isActive,
-    (active) => {
-        if (active) currentPath.value = props.initialPath
+    () => props.initialPath,
+    (next) => {
+        currentPath.value = next
     },
 )
 
 const { data: folder, refresh } = await useFetch<FolderResponse>(
-    () => `/api/folders/${currentPath.value}`,
+    () => {
+        const encoded = currentPath.value
+            .split('/')
+            .map(encodeURIComponent)
+            .join('/')
+        return `/api/folders/${encoded}`
+    },
     {
         lazy: true,
     },

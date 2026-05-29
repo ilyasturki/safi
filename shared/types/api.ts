@@ -27,3 +27,12 @@ export interface FolderMetadata {
     name: string
     path: string
 }
+
+export interface AiCompletionRequest {
+    prefix: string
+    suffix: string
+}
+
+export interface AiCompletionResponse {
+    completion: string
+}

@@ -111,6 +111,10 @@ function handleResultKeyDown(event: KeyboardEvent) {
                 links[currentIndex - 1]?.focus()
             }
             break
+
+        case 'Enter':
+            closeSearch()
+            break
     }
 }
 </script>

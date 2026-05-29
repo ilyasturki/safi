@@ -38,10 +38,21 @@ export async function readKeyBindings(): Promise<KeyBindings> {
     }
 }
 
-export async function writeKeyBindings(
-    input: unknown,
-): Promise<KeyBindings> {
+let writeChain: Promise<unknown> = Promise.resolve()
+
+export function writeKeyBindings(input: unknown): Promise<KeyBindings> {
     const partial = sanitizePartialKeyBindings(input)
+    const next = writeChain.then(
+        () => performWrite(partial),
+        () => performWrite(partial),
+    )
+    writeChain = next.catch(() => undefined)
+    return next
+}
+
+async function performWrite(
+    partial: Partial<KeyBindings>,
+): Promise<KeyBindings> {
     const current = await readKeyBindings()
     const merged: KeyBindings = { ...current, ...partial }
     const { dir, file } = getKeybindingsPath()

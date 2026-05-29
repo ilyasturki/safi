@@ -31,8 +31,12 @@ async function fetchContents() {
     const sequence = ++fetchSequence
     isLoading.value = true
     try {
+        const encoded = props.directory.path
+            .split('/')
+            .map(encodeURIComponent)
+            .join('/')
         const response = await $fetch<FolderResponse>(
-            `/api/folders/${props.directory.path}`,
+            `/api/folders/${encoded}`,
             { signal: controller.signal },
         )
         if (sequence === fetchSequence) {

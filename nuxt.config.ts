@@ -16,6 +16,7 @@ export default defineNuxtConfig({
     // },
     runtimeConfig: {
         workspacePath: '',
+        mistralApiKey: '',
     },
 
     // Disable automatic imports
