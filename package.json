@@ -1,7 +1,7 @@
 {
     "name": "safi",
     "type": "module",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "private": false,
     "description": "A minimalist, self hosted text editor for markdown files. Safi provides a clean, mobile-friendly interface focused on your content.",
     "license": "MIT",
