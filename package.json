@@ -34,6 +34,7 @@
         "@lezer/highlight": "^1.2.3",
         "@lezer/markdown": "^1.6.3",
         "@nuxt/icon": "2.2.2",
+        "@replit/codemirror-vim": "^6.3.0",
         "@tailwindcss/vite": "^4.3.0",
         "@vueuse/core": "^14.3.0",
         "h3": "^1.15.4",

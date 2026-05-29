@@ -7,12 +7,13 @@ import { baseExtensions } from './base-extensions'
 import { focusModeExtension } from './focus-mode'
 import { headingOutdentExtension } from './heading-outdent'
 import { inlineCompletionExtension } from './inline-completion'
-import { keymapsExtension } from './keymap'
+import { createKeymapsExtension } from './keymap'
 import { liveMarkers } from './live-markers'
 import { markdownExtension } from './markdown'
 import { createPlaceholder } from './placeholder'
 import { selectionExtension } from './selection'
 import { noSpell } from './spellcheck'
+import { vimExtension } from './vim'
 
 export interface UseExtensionsOptions {
     /** @default undefined */
@@ -21,6 +22,8 @@ export interface UseExtensionsOptions {
     enableLiveMarkers?: MaybeRef<boolean>
     /** @default false */
     enableFocusMode?: MaybeRef<boolean>
+    /** @default false */
+    enableVimMode?: MaybeRef<boolean>
 }
 
 export function useExtensions(options: UseExtensionsOptions = {}) {
@@ -28,20 +31,29 @@ export function useExtensions(options: UseExtensionsOptions = {}) {
         placeholder,
         enableLiveMarkers = false,
         enableFocusMode = false,
+        enableVimMode = false,
     } = options
 
     const isDark = usePreferredDark()
 
     return computed(() => {
-        const extensions = [
+        const vimOn = unref(enableVimMode)
+        const extensions = []
+
+        // Vim must come before the default keymap so its bindings win.
+        if (vimOn) {
+            extensions.push(vimExtension)
+        }
+
+        extensions.push(
             baseExtensions,
             inlineCompletionExtension(),
-            keymapsExtension,
+            createKeymapsExtension(vimOn),
             markdownExtension,
 
             noSpell,
             headingOutdentExtension,
-        ]
+        )
 
         if (unref(enableLiveMarkers)) {
             extensions.push(...liveMarkers)

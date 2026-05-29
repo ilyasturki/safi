@@ -22,6 +22,7 @@ function getPreferencesPath(): { dir: string; file: string } {
 function defaultPreferences(): Preferences {
     return {
         primaryColorId: DEFAULT_PRIMARY_COLOR_ID,
+        enableVimMode: false,
     }
 }
 
@@ -33,6 +34,10 @@ function sanitizePreferences(input: unknown): Preferences {
 
     if (isPrimaryColorId(candidate.primaryColorId)) {
         base.primaryColorId = candidate.primaryColorId
+    }
+
+    if (typeof candidate.enableVimMode === 'boolean') {
+        base.enableVimMode = candidate.enableVimMode
     }
 
     return base

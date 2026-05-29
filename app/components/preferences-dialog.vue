@@ -9,7 +9,8 @@ const isOpen = defineModel<boolean>('open', { default: false })
 const dialogEl = useTemplateRef('dialogEl')
 const isDark = usePreferredDark()
 
-const { preferences, setPrimaryColor, load } = usePreferences()
+const { preferences, setPrimaryColor, setEnableVimMode, load } =
+    usePreferences()
 
 watch(isOpen, (open) => {
     if (open) {
@@ -87,6 +88,43 @@ function swatchColor(id: string) {
                             @click="setPrimaryColor(color.id)"
                         />
                     </div>
+                </div>
+
+                <div class="flex items-center justify-between px-5 py-4">
+                    <div class="flex flex-col gap-1">
+                        <span
+                            class="text-sm text-zinc-600 dark:text-zinc-400"
+                        >
+                            Vim mode
+                        </span>
+                        <span
+                            class="text-xs text-zinc-500 dark:text-zinc-500"
+                        >
+                            Use vim keybindings in the editor
+                        </span>
+                    </div>
+                    <button
+                        type="button"
+                        role="switch"
+                        :aria-checked="preferences.enableVimMode"
+                        aria-label="Toggle vim mode"
+                        class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full outline-none transition-colors focus-visible:ring-2 focus-visible:ring-zinc-400 dark:focus-visible:ring-zinc-500"
+                        :class="
+                            preferences.enableVimMode
+                                ? 'bg-zinc-900 dark:bg-zinc-100'
+                                : 'bg-zinc-300 dark:bg-zinc-700'
+                        "
+                        @click="setEnableVimMode(!preferences.enableVimMode)"
+                    >
+                        <span
+                            class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform dark:bg-zinc-900"
+                            :class="
+                                preferences.enableVimMode
+                                    ? 'translate-x-[1.375rem]'
+                                    : 'translate-x-0.5'
+                            "
+                        />
+                    </button>
                 </div>
             </div>
         </div>

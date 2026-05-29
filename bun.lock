@@ -21,6 +21,7 @@
         "@lezer/highlight": "^1.2.3",
         "@lezer/markdown": "^1.6.3",
         "@nuxt/icon": "2.2.2",
+        "@replit/codemirror-vim": "^6.3.0",
         "@tailwindcss/vite": "^4.3.0",
         "@vueuse/core": "^14.3.0",
         "h3": "^1.15.4",
@@ -492,6 +493,8 @@
     "@poppinss/dumper": ["@poppinss/dumper@0.7.0", "", { "dependencies": { "@poppinss/colors": "^4.1.5", "@sindresorhus/is": "^7.0.2", "supports-color": "^10.0.0" } }, "sha512-0UTYalzk2t6S4rA2uHOz5bSSW2CHdv4vggJI6Alg90yvl0UgXs6XSXpH96OH+bRkX4J/06djv29pqXJ0lq5Kag=="],
 
     "@poppinss/exception": ["@poppinss/exception@1.2.3", "", {}, "sha512-dCED+QRChTVatE9ibtoaxc+WkdzOSjYTKi/+uacHWIsfodVfpsueo3+DKpgU5Px8qXjgmXkSvhXvSCz3fnP9lw=="],
+
+    "@replit/codemirror-vim": ["@replit/codemirror-vim@6.3.0", "", { "peerDependencies": { "@codemirror/commands": "6.x.x", "@codemirror/language": "6.x.x", "@codemirror/search": "6.x.x", "@codemirror/state": "6.x.x", "@codemirror/view": "6.x.x" } }, "sha512-aTx931ULAMuJx6xLf7KQDOL7CxD+Sa05FktTDrtLaSy53uj01ll3Zf17JdKsriER248oS55GBzg0CfCTjEneAQ=="],
 
     "@rolldown/pluginutils": ["@rolldown/pluginutils@1.0.1", "", {}, "sha512-2j9bGt5Jh8hj+vPtgzPtl72j0yRxHAyumoo6TNfAjsLB04UtpSvPbPcDcBMxz7n+9CYB0c1GxQFxYRg2jimqGw=="],
 

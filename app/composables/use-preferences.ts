@@ -7,6 +7,7 @@ import {
 function defaultPreferences(): Preferences {
     return {
         primaryColorId: DEFAULT_PRIMARY_COLOR_ID,
+        enableVimMode: false,
     }
 }
 
@@ -43,6 +44,23 @@ export function usePreferences() {
         }
     }
 
+    async function setEnableVimMode(enabled: boolean) {
+        const next: Preferences = {
+            ...preferences.value,
+            enableVimMode: enabled,
+        }
+        preferences.value = next
+        try {
+            const saved = await $fetch<Preferences>('/api/preferences', {
+                method: 'PUT',
+                body: next,
+            })
+            preferences.value = saved
+        } catch (error) {
+            console.error('Failed to save preferences:', error)
+        }
+    }
+
     const primaryColor = computed(() =>
         getPrimaryColor(preferences.value.primaryColorId),
     )
@@ -53,5 +71,6 @@ export function usePreferences() {
         isLoaded,
         load,
         setPrimaryColor,
+        setEnableVimMode,
     }
 }

@@ -7,6 +7,7 @@ import ExplorerDialog from '~/components/explorer-dialog.vue'
 import { registerDockAction } from '~/composables/use-dock'
 import { useLastEditedFile } from '~/composables/use-last-edited-file'
 import { useOpenedFiles } from '~/composables/use-opened-files'
+import { usePreferences } from '~/composables/use-preferences'
 import { usePreferencesState } from '~/composables/use-preferences-state'
 import { useShortcut } from '~/composables/use-shortcuts'
 
@@ -60,6 +61,10 @@ const currentDirectory = computed(() => {
 })
 
 const { enableFocusMode } = usePreferencesState()
+const { preferences, load: loadPreferences } = usePreferences()
+void loadPreferences()
+const enableVimMode = computed(() => preferences.value.enableVimMode)
+
 useShortcut('open-explorer', () => {
     isExplorerOpen.value = true
 })
@@ -82,6 +87,7 @@ registerDockAction('open-explorer', () => {
             v-model:content="content"
             placeholder="Start typing your markdown..."
             :enable-focus-mode
+            :enable-vim-mode
             class="w-full max-w-[70ch]"
         />
     </div>
