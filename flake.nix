@@ -60,7 +60,7 @@
             '';
 
             dontFixup = true;
-            outputHash = "sha256-mNdw6iqujRvlh9fBUQ1BZthi3xAIMq7GyswJgpj6dSA=";
+            outputHash = "sha256-+GSlE/1BxWVFn7bn6+0YTPZ/EA8iz2ySsgh78CGBH8E=";
             outputHashAlgo = "sha256";
             outputHashMode = "recursive";
           };
