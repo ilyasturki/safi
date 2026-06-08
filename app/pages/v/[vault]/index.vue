@@ -3,13 +3,22 @@ import ExplorerDialog from '~/components/explorer-dialog.vue'
 import HomeButton from '~/components/home-button.vue'
 import InputValidation from '~/components/input-validation.vue'
 import KeyboardKey from '~/components/keyboard-key.vue'
+import { useActiveVault } from '~/composables/use-active-vault'
 import { registerDockAction, setDockView } from '~/composables/use-dock'
 import { useFileSystemCrud } from '~/composables/use-file-system-crud'
 import { useBinding, useShortcut } from '~/composables/use-shortcuts'
+import { useVaults } from '~/composables/use-vaults'
 import { getKeyDisplay } from '~/utils/key-display'
 import { navigateToEdit } from '~/utils/navigate-to-edit'
 
 const { createFile: createFileApi } = useFileSystemCrud()
+
+const { id: activeVaultId } = useActiveVault()
+const { vaults, load } = useVaults()
+load()
+const vaultName = computed(
+    () => vaults.value.find((vault) => vault.id === activeVaultId.value)?.name,
+)
 
 const isShortcutsOpen = useState('isShortcutsOpen', () => false)
 const isExplorerOpen = ref(false)
@@ -70,6 +79,12 @@ registerDockAction('open-explorer', () => (isExplorerOpen.value = true))
                 />
                 Safi
             </h1>
+            <p
+                v-if="vaultName"
+                class="text-sm text-zinc-500 dark:text-zinc-400"
+            >
+                {{ vaultName }}
+            </p>
         </header>
 
         <main class="flex w-full max-w-md flex-col items-center">

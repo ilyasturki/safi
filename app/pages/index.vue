@@ -9,7 +9,7 @@ import {
 import { clearDockView } from '~/composables/use-dock'
 import { useVaults } from '~/composables/use-vaults'
 
-const { vaults, isLoaded, load } = useVaults()
+const { vaults, load } = useVaults()
 const { switchTo } = useActiveVault()
 const stored = useStoredActiveVault()
 
@@ -21,15 +21,25 @@ await load()
 
 const hasVaults = computed(() => vaults.value.length > 0)
 
-onMounted(async () => {
-    if (!isLoaded.value) await load()
-    if (vaults.value.length === 0) return
+// Surface the last-used vault only if it still exists in the registry — a
+// stored id can point at a vault that was since removed.
+const lastUsedId = computed(() =>
+    stored.value && vaults.value.some((v) => v.id === stored.value) ?
+        stored.value
+    :   undefined,
+)
 
-    const lastUsed = stored.value
-    if (lastUsed && vaults.value.some((v) => v.id === lastUsed)) {
-        await switchTo(lastUsed)
-    }
-})
+// Float the last-used vault to the top as a quick re-entry point, keeping the
+// rest in the registry's (name-sorted) order.
+const sortedVaults = computed(() =>
+    lastUsedId.value ?
+        vaults.value.toSorted((a, b) =>
+            a.id === lastUsedId.value ? -1
+            : b.id === lastUsedId.value ? 1
+            : 0,
+        )
+    :   vaults.value,
+)
 
 async function handlePick(vaultId: string) {
     await switchTo(vaultId)
@@ -61,13 +71,22 @@ async function handleAdded(vaultId: string) {
         <main class="flex w-full max-w-md flex-col items-center gap-3">
             <template v-if="hasVaults">
                 <HomeButton
-                    v-for="vault in vaults"
+                    v-for="vault in sortedVaults"
                     :key="vault.id"
                     @click="handlePick(vault.id)"
                 >
-                    <span class="flex items-center gap-2">
-                        <Icon name="lucide:folder" />
-                        {{ vault.name }}
+                    <span class="flex min-w-0 items-center gap-2">
+                        <Icon
+                            name="lucide:folder"
+                            class="shrink-0"
+                        />
+                        <span class="truncate">{{ vault.name }}</span>
+                    </span>
+                    <span
+                        v-if="vault.id === lastUsedId"
+                        class="shrink-0 rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
+                    >
+                        Last used
                     </span>
                 </HomeButton>
             </template>
