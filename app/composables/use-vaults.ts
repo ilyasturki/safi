@@ -11,7 +11,17 @@ export function useVaults() {
         if (inflight) return inflight
         inflight = (async () => {
             try {
-                vaults.value = await $fetch<Vault[]>('/api/vaults')
+                const data = await $fetch<Vault[]>('/api/vaults')
+                // The endpoint contract is a Vault[]. Guard against responses
+                // that are not arrays — e.g. when /api/* is not routed to the
+                // Nitro server and $fetch resolves to the SPA HTML shell — so
+                // consumers never crash on vaults.value.some(...) / v-for.
+                if (Array.isArray(data)) {
+                    vaults.value = data
+                } else {
+                    console.error('Unexpected /api/vaults response:', data)
+                    vaults.value = []
+                }
             } catch (error) {
                 console.error('Failed to load vaults:', error)
             } finally {
