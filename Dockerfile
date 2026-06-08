@@ -34,9 +34,10 @@ COPY --from=build /app/.output /app
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
+# /app/vaults is a convenient mount point to browse to and register vaults from
+# the app; /app/config stores the vault list, preferences, and keybindings.
 RUN mkdir -p /app/vaults /app/config
 
-ENV NUXT_VAULTS_PATH=/app/vaults
 ENV NUXT_CONFIG_PATH=/app/config
 ENV PUID=1000
 ENV PGID=1000

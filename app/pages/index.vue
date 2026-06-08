@@ -1,14 +1,19 @@
 <script setup lang="ts">
 import { Icon } from '#components'
-
 import HomeButton from '~/components/home-button.vue'
-import { useActiveVault, useStoredActiveVault } from '~/composables/use-active-vault'
+import VaultAddDialog from '~/components/vault-add-dialog.vue'
+import {
+    useActiveVault,
+    useStoredActiveVault,
+} from '~/composables/use-active-vault'
 import { clearDockView } from '~/composables/use-dock'
 import { useVaults } from '~/composables/use-vaults'
 
 const { vaults, isLoaded, load } = useVaults()
 const { switchTo } = useActiveVault()
 const stored = useStoredActiveVault()
+
+const isAddOpen = ref(false)
 
 clearDockView()
 
@@ -27,6 +32,10 @@ onMounted(async () => {
 })
 
 async function handlePick(vaultId: string) {
+    await switchTo(vaultId)
+}
+
+async function handleAdded(vaultId: string) {
     await switchTo(vaultId)
 }
 </script>
@@ -49,7 +58,7 @@ async function handlePick(vaultId: string) {
             </p>
         </header>
 
-        <main class="flex w-full max-w-md flex-col items-center">
+        <main class="flex w-full max-w-md flex-col items-center gap-3">
             <template v-if="hasVaults">
                 <HomeButton
                     v-for="vault in vaults"
@@ -71,16 +80,24 @@ async function handlePick(vaultId: string) {
                     class="text-3xl text-zinc-400 dark:text-zinc-600"
                 />
                 <p class="text-sm text-zinc-600 dark:text-zinc-400">
-                    No vaults found.
+                    No vaults yet.
                 </p>
-                <p
-                    class="max-w-sm text-xs text-zinc-500 dark:text-zinc-500"
-                >
-                    Create a folder inside the directory pointed to by
-                    <code class="font-mono">NUXT_VAULTS_PATH</code>
-                    and reload.
+                <p class="max-w-sm text-xs text-zinc-500 dark:text-zinc-500">
+                    Add a folder on the server to use as a vault.
                 </p>
             </div>
+
+            <HomeButton @click="isAddOpen = true">
+                <span class="flex items-center gap-2">
+                    <Icon name="lucide:folder-plus" />
+                    Add vault
+                </span>
+            </HomeButton>
         </main>
+
+        <VaultAddDialog
+            v-model:open="isAddOpen"
+            @added="handleAdded"
+        />
     </div>
 </template>

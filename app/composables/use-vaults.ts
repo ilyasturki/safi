@@ -37,5 +37,19 @@ export function useVaults() {
         await load()
     }
 
-    return { vaults, isLoaded, load, refresh }
+    async function register(folderPath: string): Promise<Vault> {
+        const vault = await $fetch<Vault>('/api/vaults', {
+            method: 'POST',
+            body: { path: folderPath },
+        })
+        await refresh()
+        return vault
+    }
+
+    async function remove(id: string): Promise<void> {
+        await $fetch(`/api/vaults/${id}`, { method: 'DELETE' })
+        await refresh()
+    }
+
+    return { vaults, isLoaded, load, refresh, register, remove }
 }

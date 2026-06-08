@@ -12,7 +12,6 @@ export default defineNuxtConfig({
     },
 
     runtimeConfig: {
-        vaultsPath: '',
         configPath: '',
         mistralApiKey: '',
     },

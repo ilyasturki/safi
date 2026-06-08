@@ -4,12 +4,12 @@
 
 # Safi
 
-A minimalist, self-hosted text editor for markdown files with a clean, mobile-friendly interface and file-based storage. Vaults are Obsidian-compatible — point Safi at a parent directory and every subfolder becomes a switchable vault.
+A minimalist, self-hosted text editor for markdown files with a clean, mobile-friendly interface and file-based storage. Vaults are Obsidian-compatible — register any folder on the server as a vault, right from the app.
 
 ## Features
 
 - Minimalist, distraction-free interface
-- Multiple vaults (Obsidian-style) — switchable from the dock
+- Multiple vaults (Obsidian-style) — add, switch, and remove them from the dock
 - Markdown file-based storage on the server
 - Shortcuts for efficient workflow
 - Focus mode for deep work
@@ -21,10 +21,10 @@ A minimalist, self-hosted text editor for markdown files with a clean, mobile-fr
 
 The easiest way to run Safi is using the pre-built Docker image from GitHub Container Registry.
 
-Safi expects two host directories:
+Safi uses two host directories:
 
-- **`vaults/`** — parent directory. Each top-level non-hidden subfolder is a vault. `.obsidian/` directories inside vaults are preserved untouched.
-- **`config/`** — global preferences and keybindings (shared across all vaults).
+- **`vaults/`** — where you keep your vault folders. Nothing is auto-discovered: you register a vault from the app by browsing to its folder (mounted under `/app/vaults`). `.obsidian/` directories inside vaults are preserved untouched.
+- **`config/`** — the vault list (`vaults.json`), preferences, and keybindings (shared across all vaults).
 
 By default the container runs as uid/gid `1000:1000`, which matches the first regular user on most Linux desktops — so files in `./vaults` will be owned by you on the host and can be edited with any editor. If your host user has different ids (run `id` to check), set `PUID` and `PGID` accordingly.
 
@@ -40,7 +40,7 @@ docker run -d \
   ghcr.io/ilyasturki/safi:latest
 ```
 
-Create at least one vault by making a subfolder, e.g. `./vaults/Personal/`, then visit `http://localhost:3000`.
+Visit `http://localhost:3000`, click **Add vault**, and browse to a folder under `/app/vaults` (e.g. create `./vaults/Personal/` on the host first) to register it.
 
 ### Docker Compose
 
@@ -65,15 +65,16 @@ Then run:
 docker-compose up -d
 ```
 
-### Upgrading from a single workspace
+### Upgrading from earlier versions
 
-Earlier versions of Safi used a single `NUXT_WORKSPACE_PATH` pointing to one directory. The new layout requires a parent directory containing one subfolder per vault:
+Older versions configured vaults through a path environment variable
+(`NUXT_WORKSPACE_PATH`, later `NUXT_VAULTS_PATH`). Neither is read anymore —
+vaults are now registered from the app and stored in `config/vaults.json`.
 
-1. Rename your existing host directory so it becomes a child of a new parent: e.g. `mv ./workspace ./vaults/Personal`.
-2. Replace `-v $(pwd)/workspace:/app/workspace` with `-v $(pwd)/vaults:/app/vaults`, and add a new bind for global config: `-v $(pwd)/config:/app/config`.
-3. (Optional) Copy your old `./vaults/Personal/.safi/` to `./config/` to preserve preferences and keybindings — they now live globally instead of per-vault.
-
-`NUXT_WORKSPACE_PATH` is no longer read; use `NUXT_VAULTS_PATH` and `NUXT_CONFIG_PATH`.
+1. Keep mounting your vault folders under `/app/vaults` (or anywhere on the
+   server) and bind your config dir: `-v $(pwd)/config:/app/config`.
+2. Drop any `NUXT_WORKSPACE_PATH` / `NUXT_VAULTS_PATH` settings — they're ignored.
+3. Open the app, click **Add vault**, and browse to each folder to register it.
 
 ### NixOS
 
@@ -115,16 +116,18 @@ bun run build
 bun run start
 ```
 
-Create a `.env` from the template and point it at your vaults and config dirs:
+Optionally create a `.env` from the template to set the config dir (where the
+vault list, preferences, and keybindings live). It defaults to `~/.config/safi`:
 
 ```bash
 cp .env.example .env
 ```
 
 ```env
-NUXT_VAULTS_PATH=/path/to/your/vaults
 NUXT_CONFIG_PATH=/path/to/your/safi-config
 ```
+
+Then open the app and click **Add vault** to register a folder.
 
 ## Contributing
 

@@ -13,9 +13,9 @@ services:
             - HOST=0.0.0.0
             - PORT=3000
         volumes:
-            # Each top-level subfolder of ./vaults is auto-discovered as a
-            # separate vault. `.obsidian/` directories inside vaults are
+            # A place to keep your vault folders. Register them from the app by
+            # browsing to /app/vaults. `.obsidian/` directories inside vaults are
             # preserved untouched for Obsidian compatibility.
             - ./vaults:/app/vaults
-            # Global preferences and keybindings (shared across all vaults).
+            # Vault list (vaults.json), preferences, and keybindings.
             - ./config:/app/config

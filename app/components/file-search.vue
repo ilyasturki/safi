@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { FileMetadata } from '~~/shared/types/api'
 import { Icon } from '#components'
+import { HTTP_STATUS } from '~~/shared/utils/http-status'
 import { useActiveVault } from '~/composables/use-active-vault'
 import { useOpenedFiles } from '~/composables/use-opened-files'
-import { HTTP_STATUS } from '~~/shared/utils/http-status'
 
 const emit = defineEmits<{ close: [] }>()
 
@@ -61,11 +61,8 @@ const errorMessage = computed(() => {
 
     const { statusCode, statusMessage } = error.value
 
-    if (
-        statusCode === HTTP_STATUS.INTERNAL_SERVER_ERROR
-        && statusMessage?.includes('NUXT_VAULTS_PATH')
-    ) {
-        return 'Vaults not configured'
+    if (statusCode === HTTP_STATUS.NOT_FOUND) {
+        return 'Vault not found'
     }
     if (statusCode === HTTP_STATUS.FORBIDDEN) {
         return 'Unable to access vault'

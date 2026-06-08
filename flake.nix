@@ -134,8 +134,10 @@
               type = lib.types.str;
               default = "/var/lib/safi/vaults";
               description = ''
-                Parent directory holding one subfolder per vault. Each
-                top-level non-hidden subfolder is auto-discovered as a vault.
+                A writable directory pre-created and owned by the service user.
+                Safi no longer auto-discovers vaults from an env var — register
+                vaults from the app by browsing to a folder. This is just a
+                convenient, correctly-owned place to keep them.
               '';
             };
             configPath = lib.mkOption {
@@ -187,7 +189,6 @@
               environment = {
                 HOST = cfg.host;
                 PORT = toString cfg.port;
-                NUXT_VAULTS_PATH = cfg.vaultsPath;
                 NUXT_CONFIG_PATH = cfg.configPath;
               };
               serviceConfig = {
