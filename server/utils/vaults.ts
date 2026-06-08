@@ -1,6 +1,7 @@
 import type { H3Event } from 'h3'
 import { constants } from 'node:fs'
 import { access, readdir, stat } from 'node:fs/promises'
+import { homedir } from 'node:os'
 import path from 'node:path'
 
 import { isHiddenFile } from '~~/server/utils/workspace'
@@ -37,14 +38,19 @@ export function getVaultsRoot(): string {
 
 export function getConfigPath(): string {
     const { configPath } = useRuntimeConfig()
-    if (!configPath) {
-        throw createError({
-            statusCode: 500,
-            statusMessage:
-                'NUXT_CONFIG_PATH environment variable is not set. Please configure it to point to a directory where global preferences and keybindings will be stored.',
-        })
+    if (configPath) {
+        return path.resolve(configPath)
     }
-    return path.resolve(configPath)
+
+    // No explicit NUXT_CONFIG_PATH — fall back to the XDG Base Directory
+    // default: $XDG_CONFIG_HOME/safi, or ~/.config/safi. Per the XDG spec a
+    // relative $XDG_CONFIG_HOME is invalid and ignored.
+    const xdgConfigHome = process.env.XDG_CONFIG_HOME
+    const base =
+        xdgConfigHome && path.isAbsolute(xdgConfigHome)
+            ? xdgConfigHome
+            : path.join(homedir(), '.config')
+    return path.join(base, 'safi')
 }
 
 function toVault(root: string, name: string): Vault {
