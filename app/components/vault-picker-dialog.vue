@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import type { Vault } from '~~/server/utils/vaults'
 import { Icon } from '#components'
+import ConfirmDialog from '~/components/confirm-dialog.vue'
 import VaultAddDialog from '~/components/vault-add-dialog.vue'
 import { useActiveVault } from '~/composables/use-active-vault'
 import { useVaults } from '~/composables/use-vaults'
@@ -11,6 +13,8 @@ const { vaults, load, remove } = useVaults()
 const { id: activeId, switchTo } = useActiveVault()
 
 const isAddOpen = ref(false)
+const isRemoveOpen = ref(false)
+const pendingRemoval = ref<Vault | null>(null)
 
 watch(isOpen, async (open) => {
     if (open) {
@@ -31,11 +35,20 @@ async function handlePick(vaultId: string) {
     await switchTo(vaultId)
 }
 
-async function handleRemove(vaultId: string) {
-    await remove(vaultId)
+function handleRemove(vault: Vault) {
+    pendingRemoval.value = vault
+    isRemoveOpen.value = true
+}
+
+async function confirmRemove() {
+    const vault = pendingRemoval.value
+    pendingRemoval.value = null
+    if (!vault) return
+
+    await remove(vault.id)
     // Removing the active vault leaves the current route pointing at a vault
     // that no longer exists — send the user back to the vault chooser.
-    if (vaultId === activeId.value) {
+    if (vault.id === activeId.value) {
         handleClose()
         await navigateTo('/')
     }
@@ -108,7 +121,7 @@ async function handleAdded(vaultId: string) {
                             type="button"
                             class="mr-2 flex shrink-0 items-center justify-center rounded-md p-2 text-zinc-400 transition-colors hover:bg-zinc-100 hover:text-red-600 dark:text-zinc-500 dark:hover:bg-zinc-800 dark:hover:text-red-400"
                             title="Remove from list"
-                            @click="handleRemove(vault.id)"
+                            @click="handleRemove(vault)"
                         >
                             <Icon name="lucide:x" />
                         </button>
@@ -134,5 +147,14 @@ async function handleAdded(vaultId: string) {
     <VaultAddDialog
         v-model:open="isAddOpen"
         @added="handleAdded"
+    />
+
+    <ConfirmDialog
+        v-model:open="isRemoveOpen"
+        title="Remove vault"
+        :message="`Remove “${pendingRemoval?.name}” from your vault list? This only forgets the vault here — the folder and its files stay on disk.`"
+        confirm-label="Remove"
+        destructive
+        @confirm="confirmRemove"
     />
 </template>
